@@ -1,0 +1,6 @@
+# hanflow-evolve/.gitignore
+.loop.lock
+*.tmp
+cycles/*/loop.log
+__pycache__/
+*.pyc
