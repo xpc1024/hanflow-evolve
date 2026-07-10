@@ -21,7 +21,13 @@ description: 启动或恢复 hanflow 自主进化循环. 读取 hanflow-evolve/s
 
 ## 并发防护
 
-启动时先 `source scripts/acquire-lock.sh $EVOLVE_HOME` 获取锁,防止多个 LOOP 实例同时运行 (spec §8.6)。退出时自动释放。
+启动时先 `source scripts/acquire-lock.sh $EVOLVE_HOME` 获取锁,防止多个 LOOP 实例同时运行 (spec §8.6)。
+
+锁机制细节:
+- 锁文件: `$EVOLVE_HOME/.loop.lock` (内容为持有者 PID)
+- 必须用 `source` 而非执行, 因为脚本在调用 shell 注册 `trap ... EXIT INT TERM` 实现自动释放
+- 残留锁 (PID 已死) 会被自动清除后重新获取, 无需人工干预
+- 活锁 (PID 仍活) → `exit 1` 并提示 "LOOP 已在运行 (PID N). 如需强制启动, 先删除 <lock>."
 
 ## 命令变体
 
