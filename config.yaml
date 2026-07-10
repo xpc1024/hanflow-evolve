@@ -1,0 +1,89 @@
+# hanflow-evolve/config.yaml — LOOP 系统配置
+# 详见 spec §6.6
+
+paths:
+  hanflow: "E:/opensource/hanflow"
+  hanflow_site: "E:/opensource/hanflow-site"
+  evolve_home: "E:/opensource/hanflow-evolve"
+
+versioning:
+  baseline: "1.0.0"
+  authoritative_source: "hanflow/__init__.py"
+  align_on_release: true
+  conventional_commits: true
+  changelog_auto: true
+
+signals:
+  github:
+    enabled: true
+    repo: "user/hanflow"
+    fetch_prs: true
+  source_stubs:
+    enabled: true
+    patterns:
+      - "NotImplementedError"
+      - "deferred to Phase"
+      - "wired in Phase"
+      - "delegates to SDK"
+      - "TODO"
+      - "FIXME"
+  learnings:
+    enabled: true
+  competitor:
+    enabled: false
+    frameworks: ["LangGraph", "CrewAI", "AutoGen", "Dify"]
+    depth: "shallow"
+
+prioritization:
+  source_weights:
+    github: 40
+    source_stub: 35
+    learnings: 40
+    competitor: 15
+  theme_weights:
+    breadth_bonus_max: 15
+    learnings_alignment: 12
+    effort_penalty: {small: 0, medium: -8, large: -18}
+    risk_penalty: {low: 0, medium: -10, high: -25}
+  competitor_member_discount: 0.5
+  score_gap_for_tie: 5
+  max_themes_in_backlog: 20
+
+execution:
+  auto_fix_max_retries: 3
+  parallel_agents: 3
+  feature_branch_prefix: "evolve/"
+  token_budget_per_phase: 80000
+  token_budget_per_cycle: 250000
+
+skills:
+  design_frontend: "design-taste-frontend"
+  superpowers_prefix: "superpowers:"
+
+release:
+  merge_strategy: "no-ff"
+  create_github_release: true
+  site_sync:
+    enabled: true
+    on_feature_change_only: true
+    locales: ["en", "zh"]
+    build_verify: true
+
+schedule:
+  reminder:
+    enabled: true
+    interval_days: 7
+    suppress_hours: 24
+  headless:
+    enabled: false
+    cron: "0 14 * * 5"
+    stop_at_gate: true
+
+learning:
+  learnings_file: "LEARNINGS.md"
+  backlog_file: "BACKLOG.md"
+  retro_required: true
+
+audit:
+  max_retries: 2
+  checklist_categories: [architecture, completeness, consistency, complexity, history]
