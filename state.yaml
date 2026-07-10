@@ -1,0 +1,26 @@
+# state.yaml — LOOP 唯一状态真相源 (spec §2.2)
+# 由 write-state.sh 原子更新, 请勿手动编辑
+
+cycle_id: null
+current_version: "1.0.0"
+target_version: null
+target_theme: null
+phase: "uninitialized"
+gate_status: null
+retry_count: 0
+audit_retry_count: 0
+started_at: null
+artifacts:
+  signals: null
+  direction: null
+  audit_direction: null
+  design: null
+  audit_design: null
+  execution_plan: null
+  test_report: null
+last_error: null
+last_cycle_completed: null
+last_reminded: null
+site_sync_needed: null
+revision_feedback: null
+pending_human_topic: null
