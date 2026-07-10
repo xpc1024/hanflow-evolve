@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash E:/opensource/hanflow-evolve/scripts/check-due.sh E:/opensource/hanflow-evolve"
+          }
+        ]
+      }
+    ]
+  }
+}
