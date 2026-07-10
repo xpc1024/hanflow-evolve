@@ -3,9 +3,11 @@
 load 'test-helper'
 
 # setup: 在 BATS_TMPDIR 下搭一个 fake evolve_home + 一个真实本地 git fake hanflow
+# 用本文件唯一子目录避免与其它 test 文件并发/串行时互相覆盖。
 setup() {
-  EVOLVE="$BATS_TMPDIR/evolve"
-  HANFLOW="$BATS_TMPDIR/hanflow"
+  BASE="$BATS_TMPDIR/ghsync"
+  EVOLVE="$BASE/evolve"
+  HANFLOW="$BASE/hanflow"
   rm -rf "$EVOLVE" "$HANFLOW"
   mkdir -p "$EVOLVE" "$HANFLOW"
 

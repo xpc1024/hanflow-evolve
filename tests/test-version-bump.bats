@@ -3,9 +3,11 @@
 load 'test-helper'
 
 # setup: 在 BATS_TMPDIR 下搭一个 fake evolve_home + fake hanflow, 包含 4 个版本位置
+# 用本文件唯一子目录避免与其它 test 文件 (同样用 BATS_TMPDIR) 并发/串行时互相覆盖。
 setup() {
-  EVOLVE="$BATS_TMPDIR/evolve"
-  HANFLOW="$BATS_TMPDIR/hanflow"
+  BASE="$BATS_TMPDIR/vbump"
+  EVOLVE="$BASE/evolve"
+  HANFLOW="$BASE/hanflow"
   rm -rf "$EVOLVE" "$HANFLOW"
   mkdir -p "$EVOLVE" "$HANFLOW/hanflow" "$HANFLOW/api" "$HANFLOW/web"
 

@@ -29,7 +29,7 @@ EOF
 }
 
 @test "outputs reminder when interval exceeded" {
-  EVOLVE="$BATS_TMPDIR/ev"
+  EVOLVE="$BATS_TMPDIR/cdue/ev"
   rm -rf "$EVOLVE"; mkdir -p "$EVOLVE"
   write_reminder_config "$EVOLVE"
   # last_cycle 10 天前 (NOW=2026-07-20, last=2026-07-10), phase=awaiting_next_cycle
@@ -41,7 +41,7 @@ EOF
 }
 
 @test "silent when within interval" {
-  EVOLVE="$BATS_TMPDIR/ev"
+  EVOLVE="$BATS_TMPDIR/cdue/ev"
   rm -rf "$EVOLVE"; mkdir -p "$EVOLVE"
   write_reminder_config "$EVOLVE"
   # last_cycle 2 天前 (NOW=2026-07-12, last=2026-07-10)
@@ -52,7 +52,7 @@ EOF
 }
 
 @test "silent when reminder disabled" {
-  EVOLVE="$BATS_TMPDIR/ev"
+  EVOLVE="$BATS_TMPDIR/cdue/ev"
   rm -rf "$EVOLVE"; mkdir -p "$EVOLVE"
   # config 关闭 reminder
   cat > "$EVOLVE/config.yaml" <<'EOF'
@@ -69,7 +69,7 @@ EOF
 }
 
 @test "silent when not initialized" {
-  EVOLVE="$BATS_TMPDIR/ev"
+  EVOLVE="$BATS_TMPDIR/cdue/ev"
   rm -rf "$EVOLVE"; mkdir -p "$EVOLVE"
   write_reminder_config "$EVOLVE"
   # 没有 state.yaml

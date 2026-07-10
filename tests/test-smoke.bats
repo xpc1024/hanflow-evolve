@@ -8,7 +8,7 @@ load 'test-helper'
 }
 
 @test "fails when hanflow not found" {
-  EVOLVE="$BATS_TMPDIR/ev"
+  EVOLVE="$BATS_TMPDIR/smoke/ev"
   rm -rf "$EVOLVE"; mkdir -p "$EVOLVE"
   # config 指向一个不存在的 hanflow 路径
   cat > "$EVOLVE/config.yaml" <<EOF
