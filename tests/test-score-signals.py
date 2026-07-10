@@ -107,3 +107,37 @@ def test_competitor_signal_has_low_base_weight():
     result = run_score(signals)
     score = result["signals"][0]["score"]
     assert score == 15, f"Expected 15, got {score}"  # base only, no other bonuses
+
+
+def test_theme_aggregation_groups_related_signals():
+    signals = {
+        "cycle_id": "test", "degraded": {},
+        "signals": [
+            {"id": f"stub-{i}", "source": "source_stub", "weight_tier": "high",
+             "raw": {"type": "cli_stub", "file": "hanflow/cli/main.py", "line": 100+i,
+                     "module": "cli", "context": f"cmd{i}: delegates to SDK"}}
+            for i in range(5)
+        ]
+    }
+    result = run_score(signals)
+    assert len(result["themes"]) >= 1
+    cli_theme = result["themes"][0]
+    assert len(cli_theme["member_signals"]) == 5
+    assert cli_theme["theme_score"] > 0
+
+
+def test_themes_sorted_by_score_descending():
+    signals = {
+        "cycle_id": "test", "degraded": {},
+        "signals": [
+            {"id": "gh-1", "source": "github_issue", "weight_tier": "high",
+             "raw": {"number": 1, "title": "bug", "labels": ["bug"],
+                     "reactions": {"total_count": 20},
+                     "created_at": "2026-07-09T00:00:00Z", "updated_at": "2026-07-09T00:00:00Z"}},
+            {"id": "stub-1", "source": "source_stub", "weight_tier": "high",
+             "raw": {"type": "todo_marker", "file": "x/y.py", "line": 1, "module": "x", "context": "# TODO"}},
+        ]
+    }
+    result = run_score(signals)
+    scores = [t["theme_score"] for t in result["themes"]]
+    assert scores == sorted(scores, reverse=True), f"Not sorted desc: {scores}"

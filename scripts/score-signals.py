@@ -181,6 +181,194 @@ def score_signal(signal: dict[str, Any], config: dict[str, Any],
 
 
 # ---------------------------------------------------------------------------
+# 主题聚类与主题打分 (spec §3.3 steps 2-3)
+# ---------------------------------------------------------------------------
+
+# theme_id → (title, version_impact, default_source)
+THEME_META: dict[str, tuple[str, str, str]] = {
+    "cli-completion": ("CLI command completion (stub delegation to SDK)", "patch", "source_stub"),
+    "issue-bug": ("Bug / security fixes from GitHub issues", "patch", "github"),
+    "issue-feature": ("Feature requests from GitHub", "minor", "github"),
+    "issue-docs": ("Documentation improvements from GitHub", "patch", "github"),
+    "issue-misc": ("Miscellaneous GitHub issues", "patch", "github"),
+    "learnings-priority": ("Priorities from LEARNINGS.md", "minor", "learnings"),
+    "misc": ("Miscellaneous signals", "patch", "mixed"),
+}
+
+
+def _signal_module(signal: dict[str, Any]) -> str:
+    """从 signal 抽取模块名: 优先 raw.module, 否则从 file 路径推导。"""
+    raw = signal.get("raw", {}) or {}
+    mod = raw.get("module")
+    if mod:
+        return str(mod)
+    f = raw.get("file", "") or ""
+    if f:
+        norm = str(f).replace("\\", "/")
+        parts = [p for p in norm.split("/") if p and p != "hanflow"]
+        return parts[0] if parts else ""
+    return ""
+
+
+def theme_key_for(signal: dict[str, Any]) -> str:
+    """返回 signal 所属的 theme_id (聚类键)。"""
+    source = normalize_source(signal.get("source", ""))
+    raw = signal.get("raw", {}) or {}
+    if source == "source_stub":
+        stub_type = raw.get("type", "")
+        if stub_type == "cli_stub":
+            return "cli-completion"
+        mod = _signal_module(signal) or "unknown"
+        return f"stub-{mod}"
+    if source == "github":
+        labels = [str(l).lower() for l in (raw.get("labels") or [])]
+        for bucket, keys in (
+            ("bug", {"bug", "security", "crash", "regression"}),
+            ("feature", {"feature", "enhancement", "improvement"}),
+            ("docs", {"question", "docs", "documentation"}),
+        ):
+            if set(labels) & keys:
+                return f"issue-{bucket}"
+        return "issue-misc"
+    if source == "learnings":
+        return "learnings-priority"
+    if source == "competitor":
+        feat = raw.get("feature") or raw.get("framework") or "observed"
+        return f"competitor-{feat}"
+    return "misc"
+
+
+def _theme_title(tid: str) -> str:
+    """为动态 theme_id (stub-* / competitor-*) 生成可读标题; 其余查 THEME_META。"""
+    if tid in THEME_META:
+        return THEME_META[tid][0]
+    if tid.startswith("stub-"):
+        mod = tid[len("stub-"):].split(".")[0]
+        return f"Complete source stubs in '{mod}' module"
+    if tid.startswith("competitor-"):
+        return f"Competitor feature inspiration: {tid[len('competitor-'):]}"
+    return tid.replace("-", " ").capitalize()
+
+
+def _theme_meta(tid: str, sources: set[str]) -> tuple[str, str, str]:
+    """(title, version_impact, source) for a theme_id."""
+    if tid in THEME_META:
+        title, vimpact, default_src = THEME_META[tid]
+    else:
+        title = _theme_title(tid)
+        if tid.startswith("stub-"):
+            vimpact = "patch"
+        elif tid.startswith("competitor-"):
+            vimpact = "minor"
+        else:
+            vimpact = "patch"
+        default_src = "mixed"
+    src = sorted(sources)[0] if sources else default_src
+    return title, vimpact, src
+
+
+def cluster_themes(scored_signals: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """按 theme_id 聚类已打分的 signals → 原始 theme 列表 (未打分, 保序)。"""
+    groups: dict[str, dict[str, Any]] = {}
+    order: list[str] = []
+    for sig in scored_signals:
+        tid = theme_key_for(sig)
+        if tid not in groups:
+            groups[tid] = {
+                "member_ids": [],
+                "modules": set(),
+                "sources": set(),
+            }
+            order.append(tid)
+        g = groups[tid]
+        sid = sig.get("id")
+        if sid is not None:
+            g["member_ids"].append(sid)
+        mod = _signal_module(sig)
+        if mod:
+            g["modules"].add(mod)
+        src = normalize_source(sig.get("source", ""))
+        if src:
+            g["sources"].add(src)
+
+    themes: list[dict[str, Any]] = []
+    for tid in order:
+        g = groups[tid]
+        title, vimpact, src = _theme_meta(tid, g["sources"])
+        themes.append({
+            "theme_id": tid,
+            "title": title,
+            "member_signals": g["member_ids"],
+            "affected_modules": sorted(g["modules"]),
+            "version_impact": vimpact,
+            "source": src,
+            # 默认 effort/risk; 未来可由 signal 元数据或 direction 阶段覆盖
+            "effort": "medium",
+            "risk": "low",
+        })
+    return themes
+
+
+def score_theme(theme: dict[str, Any], scored_by_id: dict[str, dict[str, Any]],
+                config: dict[str, Any]) -> dict[str, Any]:
+    """计算单 theme 的 theme_score (0-100), 写回 theme 字典。"""
+    pri = config.get("prioritization", {}) or {}
+    tw = pri.get("theme_weights", {}) or {}
+
+    member_ids = theme.get("member_signals") or []
+    members = [scored_by_id[sid] for sid in member_ids if sid in scored_by_id]
+    if not members:
+        theme["theme_score"] = 0
+        theme["theme_score_breakdown"] = {"member_count": 0}
+        return theme
+
+    scores = [m.get("score", 0) for m in members]
+    # member_score = max*0.5 + avg*0.5: 既奖励峰值信号, 又反映群体热度
+    member_score = max(scores) * 0.5 + (sum(scores) / len(scores)) * 0.5
+
+    module_count = len(theme.get("affected_modules") or [])
+    if module_count <= 1:
+        breadth = 0
+    elif module_count <= 3:
+        breadth = 8
+    else:
+        breadth = 15
+    breadth = min(breadth, int(tw.get("breadth_bonus_max", 15)))
+
+    learnings_align = int(tw.get("learnings_alignment", 12)) if any(
+        normalize_source(m.get("source", "")) == "learnings" for m in members
+    ) else 0
+
+    effort_pen = tw.get("effort_penalty", {}) or {}
+    risk_pen = tw.get("risk_penalty", {}) or {}
+    effort_p = int(effort_pen.get(theme.get("effort", "medium"), effort_pen.get("medium", -8)))
+    risk_p = int(risk_pen.get(theme.get("risk", "low"), risk_pen.get("low", 0)))
+
+    raw_total = member_score + breadth + learnings_align + effort_p + risk_p
+
+    # 全员竞品来源 → 按 competitor_member_discount 折扣
+    all_competitor = bool(members) and all(
+        normalize_source(m.get("source", "")) == "competitor" for m in members
+    )
+    if all_competitor:
+        raw_total *= float(pri.get("competitor_member_discount", 0.5))
+
+    theme["theme_score"] = max(0, min(100, int(round(raw_total))))
+    theme["theme_score_breakdown"] = {
+        "member_score": round(member_score, 2),
+        "member_count": len(members),
+        "breadth_bonus": breadth,
+        "module_count": module_count,
+        "learnings_alignment": learnings_align,
+        "effort_penalty": effort_p,
+        "risk_penalty": risk_p,
+        "competitor_discounted": all_competitor,
+        "raw_total": round(raw_total, 2),
+    }
+    return theme
+
+
+# ---------------------------------------------------------------------------
 # 主流程
 # ---------------------------------------------------------------------------
 
@@ -219,12 +407,18 @@ def main(argv: list[str]) -> int:
     # 按分降序排列 (高优先在前); 稳定排序保持原顺序处理并列
     scored_signals.sort(key=lambda s: s.get("score", 0), reverse=True)
 
+    # 聚类成 theme 并打 theme 分
+    themes = cluster_themes(scored_signals)
+    scored_by_id = {sig.get("id"): sig for sig in scored_signals if sig.get("id") is not None}
+    themes = [score_theme(t, scored_by_id, config) for t in themes]
+    themes.sort(key=lambda t: t.get("theme_score", 0), reverse=True)
+
     result = {
         "cycle_id": signals_data.get("cycle_id", cycle_id),
         "scored_at": now.isoformat(timespec="seconds"),
         "degraded": signals_data.get("degraded", {}) or {},
         "signals": scored_signals,
-        "themes": [],  # 由 E2.2 填充
+        "themes": themes,
     }
 
     os.makedirs(cycle_dir, exist_ok=True)
