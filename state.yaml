@@ -3,9 +3,9 @@
 
 cycle_id: "2026-W29-1.0.1"
 current_version: "1.0.0"
-target_version: null
-target_theme: null
-phase: human_topic
+target_version: "1.0.1"
+target_theme: "T-cli-completion"
+phase: plan
 gate_status: null
 retry_count: 0
 audit_retry_count: 0
@@ -23,5 +23,5 @@ last_cycle_completed: null
 last_reminded: null
 site_sync_needed: null
 revision_feedback: null
-pending_human_topic: "补全所有 CLI stub 命令"
+pending_human_topic: null
 artifacts.signals: "cycles/2026-W29-1.0.1/signals.json"
