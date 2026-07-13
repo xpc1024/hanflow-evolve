@@ -1,0 +1,295 @@
+{
+  "cycle_id": "2026-W29-1.0.1",
+  "gathered_at": "2026-07-13T10:57:36+08:00",
+  "degraded": {
+    "gh": "error: gh_not_installed",
+    "competitor": "skipped_by_default"
+  },
+  "signals": [
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/observability/provider.py:23",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/observability/provider.py",
+        "line": 23,
+        "snippet": "raise NotImplementedError",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/observability/provider.py:26",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/observability/provider.py",
+        "line": 26,
+        "snippet": "raise NotImplementedError",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/observability/trace.py:85",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/observability/trace.py",
+        "line": 85,
+        "snippet": "raise NotImplementedError",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/observability/trace.py:94",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/observability/trace.py",
+        "line": 94,
+        "snippet": "raise NotImplementedError",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/persistence/checkpoint.py:83",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/persistence/checkpoint.py",
+        "line": 83,
+        "snippet": "raise NotImplementedError(\"Hanflow uses async checkpoint API only\")",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/persistence/checkpoint.py:86",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/persistence/checkpoint.py",
+        "line": 86,
+        "snippet": "raise NotImplementedError(\"Hanflow uses async checkpoint API only\")",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/persistence/checkpoint.py:89",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/persistence/checkpoint.py",
+        "line": 89,
+        "snippet": "raise NotImplementedError(\"Hanflow uses async checkpoint API only\")",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/persistence/resume.py:93",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/persistence/resume.py",
+        "line": 93,
+        "snippet": "orchestration). Raises NotImplementedError if no runner is set.",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/persistence/resume.py:96",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/persistence/resume.py",
+        "line": 96,
+        "snippet": "raise NotImplementedError(",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/tools/transport.py:75",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/tools/transport.py",
+        "line": 75,
+        "snippet": "raise NotImplementedError(\"remote tool call requires a live MCP server (integration test)\")",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/api/routes/observe.py:4",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/api/routes/observe.py",
+        "line": 4,
+        "snippet": "download returns a placeholder URL (signed_url wired in Phase 17).",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/api/routes/observe.py:48",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/api/routes/observe.py",
+        "line": 48,
+        "snippet": "\"note\": \"signed_url wired in Phase 17\",",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/isolation/sandbox.py:15",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/isolation/sandbox.py",
+        "line": 15,
+        "snippet": "DOCKER/K8S provisioning is wired in Phase 8/10; Phase 7 ships LOCAL + NONE",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/isolation/sandbox.py:71",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/isolation/sandbox.py",
+        "line": 71,
+        "snippet": "# Provisioning wired in Phase 8/10; for now allocate an id placeholder.",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/memory/filesystem.py:5",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/memory/filesystem.py",
+        "line": 5,
+        "snippet": "into a single value (an LLM-backed summariser is wired in Phase 8 via the",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/persistence/resume.py:9",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/persistence/resume.py",
+        "line": 9,
+        "snippet": "graph) is wired in Phase 8 (orchestration), once the compiler exists. This",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/tools/builtin/code_exec.py:47",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/tools/builtin/code_exec.py",
+        "line": 47,
+        "snippet": "# docker / firecracker wired in Phase 7 (isolation)",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/tools/builtin/vector_search.py:42",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/tools/builtin/vector_search.py",
+        "line": 42,
+        "snippet": "raise HanflowError(\"vector_search provider not configured (wired in Phase 5)\")",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/tools/builtin/web_search.py:42",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/tools/builtin/web_search.py",
+        "line": 42,
+        "snippet": "# Backend-specific implementation wired in Phase 9 (Research atom) /",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/cli/main.py:136",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/cli/main.py",
+        "line": 136,
+        "snippet": "typer.secho(f\"{_name}: {_help} (delegates to SDK)\", fg=typer.colors.YELLOW)",
+        "pattern": "delegates to SDK",
+        "type": "cli_stub"
+      }
+    },
+    {
+      "id": "learning:1",
+      "source": "learnings",
+      "weight_tier": "high",
+      "raw": {
+        "text": "补齐 LLM 流式输出 (高优先级技术债 + 用户体验直接改善)。",
+        "index": 1
+      }
+    },
+    {
+      "id": "learning:2",
+      "source": "learnings",
+      "weight_tier": "high",
+      "raw": {
+        "text": "DOCKER sandbox 落地 (生产安全边界)。",
+        "index": 2
+      }
+    },
+    {
+      "id": "learning:3",
+      "source": "learnings",
+      "weight_tier": "high",
+      "raw": {
+        "text": "CLI stub 逐个接通 SDK (让 CLI 真正可用)。",
+        "index": 3
+      }
+    },
+    {
+      "id": "learning:4",
+      "source": "learnings",
+      "weight_tier": "high",
+      "raw": {
+        "text": "MCP remote transport 实现 (工具生态)。",
+        "index": 4
+      }
+    },
+    {
+      "id": "learning:5",
+      "source": "learnings",
+      "weight_tier": "high",
+      "raw": {
+        "text": "引入 pytest-cov 建立覆盖率基线 (低成本, 为后续重构兜底)。",
+        "index": 5
+      }
+    }
+  ]
+}

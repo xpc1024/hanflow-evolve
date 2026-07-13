@@ -1,15 +1,15 @@
 # state.yaml — LOOP 唯一状态真相源 (spec §2.2)
 # 由 write-state.sh 原子更新, 请勿手动编辑
 
-cycle_id: null
+cycle_id: "2026-W29-1.0.1"
 current_version: "1.0.0"
 target_version: null
 target_theme: null
-phase: "awaiting_next_cycle"
+phase: prioritize
 gate_status: null
 retry_count: 0
 audit_retry_count: 0
-started_at: null
+started_at: "2026-07-13T02:57:31Z"
 artifacts:
   signals: null
   direction: null
@@ -24,3 +24,4 @@ last_reminded: null
 site_sync_needed: null
 revision_feedback: null
 pending_human_topic: "补全所有 CLI stub 命令"
+artifacts.signals: "cycles/2026-W29-1.0.1/signals.json"
