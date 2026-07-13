@@ -16,7 +16,7 @@ versioning:
 signals:
   github:
     enabled: true
-    repo: "user/hanflow"
+    repo: "xpc1024/hanflow-site"
     fetch_prs: true
   source_stubs:
     enabled: true
