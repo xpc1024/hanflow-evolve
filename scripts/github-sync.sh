@@ -10,7 +10,7 @@
 #   4. 前置检查: feature 分支存在; main 工作区干净
 #   5. checkout main, merge --no-ff feature
 #   6. 打 tag v$TARGET_VERSION
-#   7. 若配置了 remote 则 push (main + tag); 无 remote 仅告警, 不失败
+#   7. 遍历所有 remote 逐个 push (main + tag); 允许单个 remote 失败, 全部失败才告警
 #
 # Phase B (evolve 仓库 cycle 产物 commit) 由调用方 (skill) 在外部触发;
 # 本脚本专注 hanflow 仓库。
@@ -114,20 +114,35 @@ if [ -n "$TARGET_VERSION" ]; then
   fi
 fi
 
-# push (有 remote 才推, 无 remote 仅告警)
-REMOTE=$(git -C "$HANFLOW_PATH" remote 2>/dev/null | head -1 || true)
-if [ -n "$REMOTE" ]; then
-  echo "[github-sync] pushing to remote '$REMOTE'"
-  git -C "$HANFLOW_PATH" push "$REMOTE" "$MAIN_BRANCH" || {
-    echo "WARN: push main failed (continuing; tag below)" >&2
-  }
-  if [ -n "$TARGET_VERSION" ]; then
-    git -C "$HANFLOW_PATH" push "$REMOTE" "v$TARGET_VERSION" || {
-      echo "WARN: push tag v$TARGET_VERSION failed" >&2
-    }
-  fi
-else
+# push 到所有 remote (多 remote 容错: 允许单个失败, 全部失败才告警)
+# 例如同时推 gitee(origin) + github; 一个挂了另一个成功即视为部分成功
+REMOTES=$(git -C "$HANFLOW_PATH" remote 2>/dev/null || true)
+if [ -z "$REMOTES" ]; then
   echo "WARN: no git remote configured for $HANFLOW_PATH; skipping push (local-only release)" >&2
+else
+  PUSH_OK=0
+  PUSH_FAIL=0
+  while IFS= read -r REMOTE; do
+    [ -z "$REMOTE" ] && continue
+    echo "[github-sync] pushing main to remote '$REMOTE'"
+    if git -C "$HANFLOW_PATH" push "$REMOTE" "$MAIN_BRANCH" 2>&1; then
+      PUSH_OK=$((PUSH_OK + 1))
+    else
+      echo "WARN: push main to '$REMOTE' failed (continuing to next remote)" >&2
+      PUSH_FAIL=$((PUSH_FAIL + 1))
+      continue  # main 没推上去就不推 tag 到这个 remote, 试下一个
+    fi
+    if [ -n "$TARGET_VERSION" ]; then
+      echo "[github-sync] pushing tag v$TARGET_VERSION to remote '$REMOTE'"
+      git -C "$HANFLOW_PATH" push "$REMOTE" "v$TARGET_VERSION" || {
+        echo "WARN: push tag v$TARGET_VERSION to '$REMOTE' failed" >&2
+      }
+    fi
+  done <<< "$REMOTES"
+  echo "[github-sync] push summary: $PUSH_OK succeeded, $PUSH_FAIL failed"
+  if [ "$PUSH_OK" -eq 0 ] && [ "$PUSH_FAIL" -gt 0 ]; then
+    echo "WARN: all remotes failed to push; release is local-only (retry github-sync.sh later)" >&2
+  fi
 fi
 
 echo "OK: github-sync done (merge=$MERGE_STRATEGY target=$TARGET_VERSION)"
