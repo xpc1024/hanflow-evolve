@@ -5,7 +5,7 @@ cycle_id: null
 current_version: "1.0.0"
 target_version: null
 target_theme: null
-phase: "uninitialized"
+phase: "awaiting_next_cycle"
 gate_status: null
 retry_count: 0
 audit_retry_count: 0

@@ -1,28 +1,36 @@
 # BACKLOG.md — hanflow-evolve 主题候选队列 (spec §7)
 
-由 LOOP 的 signal + prioritization 阶段自动维护。每个候选**主题 (theme)** 是一个可独立
-交付的演进单元, 对应一个 release。
+由 LOOP 的 signal + prioritization 阶段自动维护。每个候选**主题 (theme)** 是一个可独立交付的演进单元, 对应一个 release。
 
-## 优先级与 human_override
+> 自动生成于 2026-07-13T02:51:06+00:00 · 共 3 个候选主题 (cycle `init-scan`)。
 
-- 排序由 prioritization 阶段按 `config.yaml` 的 `source_weights` + `theme_weights` 计算
-  得分自动产生。
-- **human_override 优先**: 任何时候, 人类 (用户) 可以在 `## 待实现 (Pending)` 中给某条
-  主题加 `[human_override]` 标记或调整顺序, LOOP 系统将**无条件优先**采用该主题作为下一
-  cycle 的 `target_theme`, 不再受自动评分约束。
-- 无 `[human_override]` 时, 队列顶部 (得分最高, 且与 `score_gap_for_tie` 不构成平局)
-  的主题即下一候选。
-- 已进入 `## 进行中 (In Progress)` 的主题被锁定, 不会被重新评分抢占。
-- 暂缓 (`## 暂缓 (Deferred)`) 的主题不参与下轮评分, 直到人类移回 Pending。
+> 排序: `[human_override]` 主题无条件优先; 其余按 prioritization 得分降序。
 
 ---
 
 ## 待实现 (Pending)
 
-> 按 prioritization 得分降序。每条建议字段: `[score] 主题 — 来源信号 / 备注`。
-> 标注 `[human_override]` 的条目无条件优先。
+> 按 prioritization 得分降序。标注 `[HUMAN]` 的条目为 human_override, 无条件优先。
 
-(初始为空。首次 signal + prioritization 运行后填充。)
+### [1] Priorities from LEARNINGS.md · score 44 · minor · effort medium · risk low
+
+- **theme_id**: `learnings-priority`
+- **source**: `learnings`
+- **member_signals**: `learning:1`, `learning:2`, `learning:3`, `learning:4`, `learning:5`
+
+### [2] Complete source stubs in 'E:' module · score 38 · patch · effort medium · risk low
+
+- **theme_id**: `stub-E:`
+- **affected_modules**: `E:`
+- **source**: `source_stub`
+- **member_signals**: `stub:E:/opensource/hanflow\hanflow/api/routes/observe.py:4`, `stub:E:/opensource/hanflow\hanflow/api/routes/observe.py:48`, `stub:E:/opensource/hanflow\hanflow/isolation/sandbox.py:15`, `stub:E:/opensource/hanflow\hanflow/isolation/sandbox.py:71`, `stub:E:/opensource/hanflow\hanflow/memory/filesystem.py:5`, `stub:E:/opensource/hanflow\hanflow/persistence/resume.py:9`, `stub:E:/opensource/hanflow\hanflow/tools/builtin/code_exec.py:47`, `stub:E:/opensource/hanflow\hanflow/tools/builtin/vector_search.py:42`, `stub:E:/opensource/hanflow\hanflow/tools/builtin/web_search.py:42`, `stub:E:/opensource/hanflow\hanflow/observability/provider.py:23`, `stub:E:/opensource/hanflow\hanflow/observability/provider.py:26`, `stub:E:/opensource/hanflow\hanflow/observability/trace.py:85`, `stub:E:/opensource/hanflow\hanflow/observability/trace.py:94`, `stub:E:/opensource/hanflow\hanflow/persistence/checkpoint.py:83`, `stub:E:/opensource/hanflow\hanflow/persistence/checkpoint.py:86`, `stub:E:/opensource/hanflow\hanflow/persistence/checkpoint.py:89`, `stub:E:/opensource/hanflow\hanflow/persistence/resume.py:93`, `stub:E:/opensource/hanflow\hanflow/persistence/resume.py:96`, `stub:E:/opensource/hanflow\hanflow/tools/transport.py:75`
+
+### [3] CLI command completion (stub delegation to SDK) · score 35 · patch · effort medium · risk low
+
+- **theme_id**: `cli-completion`
+- **affected_modules**: `E:`
+- **source**: `source_stub`
+- **member_signals**: `stub:E:/opensource/hanflow\hanflow/cli/main.py:136`
 
 ---
 
