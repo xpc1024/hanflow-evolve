@@ -23,4 +23,4 @@ last_cycle_completed: null
 last_reminded: null
 site_sync_needed: null
 revision_feedback: null
-pending_human_topic: null
+pending_human_topic: "补全所有 CLI stub 命令"
