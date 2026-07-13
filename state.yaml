@@ -5,7 +5,7 @@ cycle_id: "2026-W29-1.0.1"
 current_version: "1.0.0"
 target_version: null
 target_theme: null
-phase: prioritize
+phase: human_topic
 gate_status: null
 retry_count: 0
 audit_retry_count: 0

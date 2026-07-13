@@ -2,7 +2,7 @@
 
 由 LOOP 的 signal + prioritization 阶段自动维护。每个候选**主题 (theme)** 是一个可独立交付的演进单元, 对应一个 release。
 
-> 自动生成于 2026-07-13T02:51:06+00:00 · 共 3 个候选主题 (cycle `init-scan`)。
+> 自动生成于 2026-07-13T02:58:21+00:00 · 共 3 个候选主题 (cycle `2026-W29-1.0.1`)。
 
 > 排序: `[human_override]` 主题无条件优先; 其余按 prioritization 得分降序。
 
