@@ -64,6 +64,7 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 
 ### 高优先级
 
+- **CLI stub 命令已补全 (v1.0.1)**: 17 个命令全部实现 (12 真实 + 5 降级)。不再阻塞。
 - **DOCKER/K8S sandbox 占位符**: `hanflow/isolation/sandbox.py` docstring 明确
   "DOCKER/K8S provisioning is wired in Phase 8/10; Phase 7 ships LOCAL + NONE"。
   当前只有 LOCAL + NONE 可用, 容器/_pod 隔离未实现 → 生产部署安全边界缺失。
@@ -153,8 +154,12 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 
 1. 补齐 LLM 流式输出 (高优先级技术债 + 用户体验直接改善)。
 2. DOCKER sandbox 落地 (生产安全边界)。
-3. CLI stub 逐个接通 SDK (让 CLI 真正可用)。
+3. ~~CLI stub 逐个接通 SDK~~ ✓ 已完成 (v1.0.1, 2026-W29)。
 4. MCP remote transport 实现 (工具生态)。
+5. [2026-W29] github PAT 配置 (github push 失败, 需配 Access Token)。
+6. [2026-W29] score-signals.py Windows 路径 bug (affected_modules 显示 "E:")。
+7. [2026-W29] github-sync.sh 适配 master 分支 (当前硬编码 main)。
+8. [2026-W29] Group B 命令后端 (metrics/search/eval/datasets/worker)。
 5. 引入 pytest-cov 建立覆盖率基线 (低成本, 为后续重构兜底)。
 
 注意: prioritization 阶段会按 source_weights + theme_weights 重算, 此处仅作人读参考。
