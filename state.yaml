@@ -5,7 +5,7 @@ cycle_id: "2026-W29-1.0.1"
 current_version: "1.0.0"
 target_version: "1.0.1"
 target_theme: "T-cli-completion"
-phase: "gate2"
+phase: "gate3"
 gate_status: "awaiting_user"
 retry_count: 0
 audit_retry_count: 0
@@ -21,9 +21,10 @@ artifacts:
 last_error: null
 last_cycle_completed: null
 last_reminded: null
-site_sync_needed: null
+site_sync_needed: "true"
 revision_feedback: null
 pending_human_topic: null
 artifacts.signals: "cycles/2026-W29-1.0.1/signals.json"
 artifacts.direction: "cycles/2026-W29-1.0.1/direction.md"
 artifacts.design: "cycles/2026-W29-1.0.1/design.md"
+artifacts.test_report: "cycles/2026-W29-1.0.1/test-report.md"
