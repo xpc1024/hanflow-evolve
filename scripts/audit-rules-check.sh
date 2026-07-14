@@ -37,11 +37,12 @@ case "$KIND" in
 esac
 
 # header_present <section>
-# 匹配 `^##?\s*<section>` (markdown ## 或 ### 标题, section 后可跟任意文字)。
+# 匹配 `^##?\s*(\d+\.\s*)?<section>` (markdown ## 或 ### 标题, 允许数字前缀如 "1. ",
+# section 名后允许跟其它文字, 如 "## 错误处理 / HanflowError")。
 header_present() {
   local section="$1"
-  # -E 扩展正则; ## 与 ### 都算章节标题
-  grep -Eq "^###[[:space:]]*${section}|^##[[:space:]]*${section}" "$DOC"
+  # -E 扩展正则; ## 与 ### 都算章节标题; 数字前缀 (如 "1. ") 可选
+  grep -Eq "^###[[:space:]]*([0-9]+\.[[:space:]]*)?${section}|^##[[:space:]]*([0-9]+\.[[:space:]]*)?${section}" "$DOC"
 }
 
 missing=()
@@ -59,7 +60,7 @@ if [ "$KIND" = "design" ]; then
     # 提取 "错误处理" 章节正文 (从该标题到下一个同级或更高级 ## 标题)
     # 用 awk 抓取从匹配行到下一个 `^## ` (不含 ###) 的内容
     section_text=$(awk '
-      /^##[[:space:]]*错误处理/ { in_sec=1; next }
+      /^##[[:space:]]*([0-9]+\.[[:space:]]*)?错误处理/ { in_sec=1; next }
       in_sec && /^##[[:space:]]/ { in_sec=0 }
       in_sec { print }
     ' "$DOC")
