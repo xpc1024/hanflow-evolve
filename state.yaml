@@ -2,7 +2,7 @@
 # 由 write-state.sh 原子更新, 请勿手动编辑
 
 cycle_id: null
-current_version: "1.0.0"
+current_version: "1.0.1"
 target_version: null
 target_theme: null
 phase: "awaiting_next_cycle"
