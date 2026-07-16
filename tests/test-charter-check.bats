@@ -81,3 +81,27 @@ EOF
   echo "$output" | grep -q "RouterConfig"
   echo "$output" | grep -q "dataclass"
 }
+
+@test "async-api.sh passes when IO methods are async" {
+  fix="$TEST_FIXTURES/charter-ok"
+  mkdir -p "$fix/hanflow/models"
+  cat > "$fix/hanflow/models/good_router.py" <<'EOF'
+async def complete(prompt):  # 合规
+    return ""
+
+
+def estimate_cost(model):  # 合规（不在 IO 方法名模式内）
+    return 0.0
+EOF
+  touch "$fix/hanflow/__init__.py" "$fix/hanflow/models/__init__.py"
+
+  run bash "$SCRIPTS_DIR/charter-check/async-api.sh" "$fix" full "$SCRIPTS_DIR/../docs/adr"
+  [ "$status" -eq 0 ]
+}
+
+@test "async-api.sh fails when IO method is sync def" {
+  fix="$TEST_FIXTURES/charter-fail"
+  run bash "$SCRIPTS_DIR/charter-check/async-api.sh" "$fix" full "$SCRIPTS_DIR/../docs/adr"
+  [ "$status" -eq 1 ]
+  echo "$output" | grep -q "complete"
+}
