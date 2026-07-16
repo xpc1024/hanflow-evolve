@@ -29,6 +29,8 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 
 ### 设计不变量
 
+> **权威定义见 `CHARTER.md §2`**；本节为速查摘要。守护脚本见 `scripts/charter-check/`。
+
 以下模式在重构/演进时**不可破坏**, 否则破坏框架契约:
 
 1. **统一错误层级**: 所有框架错误继承 `HanflowError` (hanflow/core/errors.py), 带

@@ -11,6 +11,10 @@
 3. GitHub 同步: bash scripts/github-sync.sh (spec §5.4)
    - Phase A: hanflow (merge + tag + push 到所有 remote)
    - Phase B: hanflow-evolve 自身 commit + push
+3b. 全量架构契约审计（强制）：
+    bash scripts/charter-check/charter-check.sh --full
+    仅阻断"白名单外的新增违规"。存量（白名单内，见 docs/adr/allow-*）违规 WARN 不阻断，
+    但必须更新进对应 allow-* ADR 的清零追踪。
 4. 若 site_sync_needed == true → 执行官网同步 (见下方详细清单)
 5. (可选) gh release create (config.release.create_github_release)
 6. 写 state.yaml: phase=learn, site_sync_needed

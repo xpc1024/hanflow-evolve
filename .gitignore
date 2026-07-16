@@ -4,3 +4,6 @@
 cycles/*/loop.log
 __pycache__/
 *.pyc
+
+# charter-check 动态测试产物（每次 bats 运行自动重建）
+tests/__fixtures__/charter-ok/
