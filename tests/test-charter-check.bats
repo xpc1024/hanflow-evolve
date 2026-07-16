@@ -58,3 +58,26 @@ EOF
   echo "$output" | grep -qE '\.type\s*=='
   echo "$output" | grep -q "bad_compiler"
 }
+
+@test "pydantic-data.sh passes when Config uses BaseModel" {
+  fix="$TEST_FIXTURES/charter-ok"
+  mkdir -p "$fix/hanflow/models"
+  cat > "$fix/hanflow/models/good_config.py" <<'EOF'
+from pydantic import BaseModel
+
+class RouterConfig(BaseModel):  # 合规
+    model: str
+EOF
+  touch "$fix/hanflow/__init__.py" "$fix/hanflow/models/__init__.py"
+
+  run bash "$SCRIPTS_DIR/charter-check/pydantic-data.sh" "$fix" full "$SCRIPTS_DIR/../docs/adr"
+  [ "$status" -eq 0 ]
+}
+
+@test "pydantic-data.sh fails when Config class uses @dataclass" {
+  fix="$TEST_FIXTURES/charter-fail"
+  run bash "$SCRIPTS_DIR/charter-check/pydantic-data.sh" "$fix" full "$SCRIPTS_DIR/../docs/adr"
+  [ "$status" -eq 1 ]
+  echo "$output" | grep -q "RouterConfig"
+  echo "$output" | grep -q "dataclass"
+}
