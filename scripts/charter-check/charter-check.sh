@@ -44,8 +44,8 @@ done
 if [ "$MODE" = "doc" ]; then
   [ -n "$DOC" ] || { echo "ERROR: --doc requires a path" >&2; exit 2; }
   [ -f "$DOC" ] || { echo "ERROR: doc not found: $DOC" >&2; exit 2; }
-  # 架构变更关键词
-  if grep -qE '(新增|删除|迁移|替换|重构).*(模块|包|层|依赖)|换.*运行时|替换.*LangGraph|CLI.*(增|删).*命令|SDK.*签名|DSL.*schema' "$DOC"; then
+  # 架构变更关键词（ADR-0006: 扩展覆盖 Protocol/契约扩展、契约方法变更、多模块影响）
+  if grep -qE '(新增|删除|迁移|替换|重构).*(模块|包|层|依赖)|换.*运行时|替换.*LangGraph|CLI.*(增|删).*命令|SDK.*签名|DSL.*schema|扩展.*(Protocol|契约|接口)|(加|新增|增加).*(方法|字段|属性).*(Protocol|契约|接口|基类)|影响模块|影响.*模块' "$DOC"; then
     # 检查是否有 ADR 引用
     if grep -qE 'ADR-[0-9]{4}|docs/adr/' "$DOC"; then
       echo "OK: doc references architecture change(s) WITH ADR linkage"

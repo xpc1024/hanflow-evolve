@@ -18,3 +18,4 @@
 - 0003 (allow-errors-expr-error) - 豁免 core/expr.py ExprError 存量
 - 0004 (allow-async-checkpoint-stubs) - 豁免 checkpoint.py LangGraph sync stubs
 - 0005 (allow-layering-cross-ctx-gaps) - 豁免 8 文件跨层 import 存量
+- 0006 - Broaden --doc architecture-change signal regex（扩展文档变更信号正则）
