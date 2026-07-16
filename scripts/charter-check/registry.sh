@@ -30,14 +30,15 @@ while IFS= read -r f; do
     */orchestration/compiler.py|*/orchestration/registry.py|*/orchestration/node_executor_registry.py|*/orchestration/compiler/*.py|*/orchestration/*compiler*.py|*/orchestration/*registry*.py) : ;;
     *) continue ;;
   esac
-  # 反模式：if/elif 后跟 .type == "字面量" 或 match .type:
+  # 反模式：if/elif 后跟 node.type == "字面量" 或 match node.type:
+  # （要求 LHS 为 node——区分 next_action.type / policy.type 等非节点分派）
   while IFS= read -r line; do
     [ -z "$line" ] && continue
     lineno=$(echo "$line" | cut -d: -f1)
     content=$(echo "$line" | cut -d: -f2-)
     rel=${f#"$HANFLOW_PATH/"}
     violations+="  - ${rel}:${lineno}: ${content}  → 节点分派应走 registry（@register_node），不要硬编码 if/elif .type =="$'\n'
-  done < <(grep -nE '(if|elif)[[:space:]].*\.type[[:space:]]*==[[:space:]]*["'\'']|match[[:space:]]+.*\.type[[:space:]]*:' "$f" || true)
+  done < <(grep -nE '(if|elif)[[:space:]].*\bnode\.type[[:space:]]*==[[:space:]]*["'\'']|match[[:space:]]+.*\bnode\.type[[:space:]]*:' "$f" || true)
 done <<< "$files"
 
 # 过滤白名单
