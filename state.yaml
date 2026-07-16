@@ -5,7 +5,7 @@ cycle_id: 2026-W29-1.0.2
 current_version: "1.0.1"
 target_version: 1.1.0
 target_theme: learnings-priority
-phase: gate1
+phase: gate2
 gate_status: awaiting_user
 retry_count: 0
 audit_retry_count: 0
@@ -26,6 +26,7 @@ revision_feedback: null
 pending_human_topic: null
 artifacts.signals: cycles/2026-W29-1.0.2/signals.json
 artifacts.direction: cycles/2026-W29-1.0.2/direction.md
-artifacts.design: "cycles/2026-W29-1.0.1/design.md"
+artifacts.design: cycles/2026-W29-1.0.2/design.md
 artifacts.test_report: "cycles/2026-W29-1.0.1/test-report.md"
 artifacts.audit_direction: cycles/2026-W29-1.0.2/audit-direction.md
+artifacts.audit_design: cycles/2026-W29-1.0.2/audit-design.md
