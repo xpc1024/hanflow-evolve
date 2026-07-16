@@ -155,10 +155,10 @@ EOF
 }
 
 @test "charter-check.sh --full --only errors runs single check" {
-  # 在真实代码库上 errors 会发现 ExprError violation (exit 1)，
-  # 但这里只验证聚合入口能正确调度单条检查（不崩、有输出）
+  # 验证聚合入口能正确调度单条检查（不崩、有输出）。
+  # 注：core/expr.py 的 ExprError 已被 ADR-0003 白名单豁免，故 errors 返回 OK。
   run bash "$SCRIPTS_DIR/charter-check/charter-check.sh" --full --only errors
-  # errors 在真实库有 1 个违规 → exit 1；验证它确实跑了 errors 检查
+  [ "$status" -eq 0 ]  # 白名单覆盖后 exit 0
   echo "$output" | grep -q "errors"
-  echo "$output" | grep -q "ExprError"
+  echo "$output" | grep -q "OK: errors passed"
 }
