@@ -105,3 +105,28 @@ EOF
   [ "$status" -eq 1 ]
   echo "$output" | grep -q "complete"
 }
+
+@test "layering.sh passes when deps respect matrix" {
+  fix="$TEST_FIXTURES/charter-ok"
+  mkdir -p "$fix/hanflow/atoms" "$fix/hanflow/core"
+  cat > "$fix/hanflow/core/errors.py" <<'EOF'
+class HanflowError(Exception):
+    code: str = "HANFLOW_ERROR"
+EOF
+  cat > "$fix/hanflow/atoms/good_dep.py" <<'EOF'
+from hanflow.core.errors import HanflowError  # 合规：atoms 可依赖 core
+EOF
+  touch "$fix/hanflow/__init__.py" "$fix/hanflow/core/__init__.py" "$fix/hanflow/atoms/__init__.py"
+
+  run bash "$SCRIPTS_DIR/charter-check/layering.sh" "$fix" full "$SCRIPTS_DIR/../docs/adr"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "^OK: layering"
+}
+
+@test "layering.sh fails on illegal cross-layer dependency" {
+  fix="$TEST_FIXTURES/charter-fail"
+  run bash "$SCRIPTS_DIR/charter-check/layering.sh" "$fix" full "$SCRIPTS_DIR/../docs/adr"
+  [ "$status" -eq 1 ]
+  echo "$output" | grep -q "atoms"
+  echo "$output" | grep -q "models"
+}
