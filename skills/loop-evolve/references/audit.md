@@ -10,11 +10,16 @@
 ```bash
 # direction:
 bash scripts/audit-rules-check.sh cycles/$CYCLE_ID/direction.md direction
+# 文档契约检查（若 direction 涉及架构变更，须有 ADR 引用）：
+bash scripts/charter-check/charter-check.sh --doc cycles/$CYCLE_ID/direction.md
 
 # design:
 bash scripts/audit-rules-check.sh cycles/$CYCLE_ID/design.md design
+bash scripts/charter-check/charter-check.sh --doc cycles/$CYCLE_ID/design.md
 ```
 退出 0 = 通过, 非 0 = 有缺失章节。
+`charter-check --doc` 扫描文档中的架构变更信号（新增/迁移模块、改依赖等），
+若命中却无 ADR 引用 → 输出 WARN（非 FAIL）；ADR 必要性由 Layer 2 的 E 类判定。
 
 ### Layer 2: 语义审核 (独立 subagent, fresh context)
 用 Agent 工具派一个**未参与设计**的 subagent:

@@ -3,6 +3,10 @@
 ## 执行步骤
 
 1. 跑 make ci (ruff + mypy --strict + pytest)
+1b. 跑架构契约守护（增量守门，只查本 cycle 改动文件）：
+    bash scripts/charter-check/charter-check.sh --diff
+    若 FAIL：按输出修代码（优先）；若属有意架构演进，产/引用 ADR 后用白名单放行。
+    失败回 P6 修复，计入 retry_count（沿用现有 auto-fix 子循环，不新增计数器）。
 2. 若涉及前端: cd web && npm run typecheck && npm test
 3. 跑 bash scripts/smoke-test.sh (行为化验证: 真跑 hanflow 工作流)
 4. 调用 superpowers:verification-before-completion (必须贴命令输出)
