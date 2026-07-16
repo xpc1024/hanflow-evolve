@@ -35,3 +35,26 @@ EOF
   echo "$output" | grep -q "BadError"
   echo "$output" | grep -q "HanflowError"
 }
+
+@test "registry.sh passes when using registry lookup" {
+  fix="$TEST_FIXTURES/charter-ok"
+  mkdir -p "$fix/hanflow/orchestration"
+  cat > "$fix/hanflow/orchestration/good_compiler.py" <<'EOF'
+def compile(node):
+    executor = registry.get(node.type)  # 合规：走 registry
+    return executor.run(node)
+EOF
+  touch "$fix/hanflow/__init__.py" "$fix/hanflow/orchestration/__init__.py"
+
+  run bash "$SCRIPTS_DIR/charter-check/registry.sh" "$fix" full "$SCRIPTS_DIR/../docs/adr"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "^OK: registry"
+}
+
+@test "registry.sh fails on if/elif node.type dispatch" {
+  fix="$TEST_FIXTURES/charter-fail"
+  run bash "$SCRIPTS_DIR/charter-check/registry.sh" "$fix" full "$SCRIPTS_DIR/../docs/adr"
+  [ "$status" -eq 1 ]
+  echo "$output" | grep -qE '\.type\s*=='
+  echo "$output" | grep -q "bad_compiler"
+}
