@@ -154,8 +154,8 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 
 下一轮 cycle 选主题时的候选方向 (按当前已知信号排序; direction 阶段会重新计算):
 
-1. 补齐 LLM 流式输出 (高优先级技术债 + 用户体验直接改善)。
-2. DOCKER sandbox 落地 (生产安全边界)。
+1. **DOCKER sandbox 落地 (生产安全边界)** —— 用户明确指定下次优先 (2026-07-17 反馈)。
+2. ~~补齐 LLM 流式输出~~ → 本 cycle (2026-W29-1.0.2) 进行中。
 3. ~~CLI stub 逐个接通 SDK~~ ✓ 已完成 (v1.0.1, 2026-W29)。
 4. MCP remote transport 实现 (工具生态)。
 5. [2026-W29] github PAT 配置 (github push 失败, 需配 Access Token)。
