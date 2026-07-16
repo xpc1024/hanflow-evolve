@@ -39,9 +39,11 @@ violations=""
 while IFS= read -r f; do
   [ -z "$f" ] && continue
   # 调用方包名：从文件路径提取 hanflow/<pkg>/ 的 <pkg>
-  caller_pkg=$(echo "$f" | grep -oE 'hanflow/[^/]+/' | head -1 | tr -d '/' | sed 's|hanflow||' || true)
-  # 跳过 hanflow 顶层模块（config.py/sdk.py）——按组合根对待，不报
+  caller_pkg=$(echo "$f/" | awk -F'hanflow/' '{print $(NF)}' | awk -F'/' '{print $1}' || true)
+  # 跳过 hanflow 顶层模块（config.py/sdk.py）——按组合根对待，不报；
+  # 跳过不在已知包列表的未知包（保守不报）
   [ -z "$caller_pkg" ] && continue
+  echo "$PKG_LIST" | grep -qw "$caller_pkg" || continue
   # 扫描 import 语句
   while IFS= read -r line; do
     [ -z "$line" ] && continue
