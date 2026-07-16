@@ -130,3 +130,35 @@ EOF
   echo "$output" | grep -q "atoms"
   echo "$output" | grep -q "models"
 }
+
+@test "charter-check.sh --doc WARNs on architecture change without ADR" {
+  doc="$BATS_TMPDIR/design-no-adr.md"
+  cat > "$doc" <<'EOF'
+# 设计：新增 retrieval 模块
+## 组件分解
+新增 hanflow/retrieval 包。
+EOF
+  run bash "$SCRIPTS_DIR/charter-check/charter-check.sh" --doc "$doc"
+  [ "$status" -eq 0 ]  # WARN 非 FAIL
+  echo "$output" | grep -q "WARN"
+}
+
+@test "charter-check.sh --doc OK when architecture change has ADR link" {
+  doc="$BATS_TMPDIR/design-with-adr.md"
+  cat > "$doc" <<'EOF'
+# 设计：迁移 memory 模块
+本次迁移见 ADR-0007。
+EOF
+  run bash "$SCRIPTS_DIR/charter-check/charter-check.sh" --doc "$doc"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "OK"
+}
+
+@test "charter-check.sh --full --only errors runs single check" {
+  # 在真实代码库上 errors 会发现 ExprError violation (exit 1)，
+  # 但这里只验证聚合入口能正确调度单条检查（不崩、有输出）
+  run bash "$SCRIPTS_DIR/charter-check/charter-check.sh" --full --only errors
+  # errors 在真实库有 1 个违规 → exit 1；验证它确实跑了 errors 检查
+  echo "$output" | grep -q "errors"
+  echo "$output" | grep -q "ExprError"
+}
