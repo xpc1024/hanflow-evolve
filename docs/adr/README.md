@@ -14,4 +14,7 @@
 ## 索引
 
 - 0001 - Use CHARTER.md as authoritative source（确立权威源）
-- 0002 - Bootstrap layering whitelist（首次全量扫描存量）
+- 0002 - Bootstrap charter-check whitelist（首次全量扫描存量记录）
+- 0003 (allow-errors-expr-error) - 豁免 core/expr.py ExprError 存量
+- 0004 (allow-async-checkpoint-stubs) - 豁免 checkpoint.py LangGraph sync stubs
+- 0005 (allow-layering-cross-ctx-gaps) - 豁免 8 文件跨层 import 存量
