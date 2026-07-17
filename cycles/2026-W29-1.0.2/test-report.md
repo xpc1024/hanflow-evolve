@@ -9,7 +9,7 @@
 
 | 检查项 | 结果 |
 |---|---|
-| pytest（tests/ 全量，排除预存版本断言失败） | **340 passed, 1 skipped** |
+| pytest（tests/ 全量） | **347 passed, 1 skipped, 0 failed** |
 | pytest（本 cycle 新增测试） | **35 passed**（StreamChunk 3 + Router.stream 3 + ctx.stream 3 + provider stream 14 + LLMExecutor 2 + 回归 10） |
 | ruff check（本 cycle 文件） | **0 error** |
 | mypy --strict（本 cycle 改的包） | **0 error** |
@@ -42,7 +42,7 @@
 
 ## 已知遗留（非本 cycle 引入）
 
-- `tests/test_smoke.py` / `tests/test_e2e_v0.py`：断言版本 `== 0.1.0`，实际 `1.0.1`（历史遗留，预存失败，非本 cycle 引入）。
+- ~~`tests/test_smoke.py` / `tests/test_e2e_v0.py`：断言版本 `== 0.1.0`，实际 `1.0.1`~~ → **已修（commit 0c885d5）**：版本断言改为非空校验（不绑字面量，防未来再 rot），e2e 子系统 import 补 workflows 包。现全量 347 passed。
 - GLM SDK 流式 API 的 async 支持与末尾 usage 字段：本 cycle 按 async 写 + mock 测试通过，真实 GLM SDK 行为待生产环境二次确认（design 已标注）。
 
 ## 结论
