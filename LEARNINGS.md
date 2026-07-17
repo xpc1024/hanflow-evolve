@@ -66,6 +66,9 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 
 ### 高优先级
 
+- **[2026-W29-1.0.2] LLM 流式输出已落地 (v1.1.0)**: StreamChunk + Protocol.stream + Router.stream + emit_run_event + openai/glm 实现 + 4 占位。已完成。
+- **[2026-W29-1.0.2] version-bump.sh 路径 bug**: 脚本找 `api/__init__.py`，实际在 `hanflow/api/__init__.py`（包内）。本 cycle 手动 bump 绕过，脚本待修。
+- **[2026-W29-1.0.2] hanflow 远程 master→main 迁移**: 用户决定废弃 master 只留 main。GitHub/Gitee 的 main 已含 v1.1.0，但远程 master 分支未删（待清理）。github-sync.sh 硬编码 main 现在反而对了。
 - **CLI stub 命令已补全 (v1.0.1)**: 17 个命令全部实现 (12 真实 + 5 降级)。不再阻塞。
 - **DOCKER/K8S sandbox 占位符**: `hanflow/isolation/sandbox.py` docstring 明确
   "DOCKER/K8S provisioning is wired in Phase 8/10; Phase 7 ships LOCAL + NONE"。
@@ -95,6 +98,21 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
   "standalone SQL migration (not alembic-managed yet)" → 无版本化迁移链, 升级易出错。
 - **无 pytest-cov**: `pyproject.toml` dev 依赖只有 pytest/pytest-asyncio, 没有
   pytest-cov → 测试覆盖率不可测, 回归无量化基线。
+
+---
+
+## 有效实践（已验证）
+
+### charter-check 守护体系（2026-W29-1.0.2 全 cycle 验证）
+
+经 LLM streaming cycle 完整跑通验证，架构守护体系**有效、可运行、自我改进**：
+
+- **P4b 两阶段审核高价值**：第 1 轮 Layer-2 抓到 3 个实质 design 缺陷（错误包装致 fallback 不触发 / ctx.event 数据流断链 / glm async 误判），全部实现前修复。**不可跳过。**
+- **charter-check --diff 阻止架构漂移**：P7 抓到 `core→models` 反向依赖（StreamChunk 定义位置），forcing 修复（移到 core/result.py）。policy-as-code 核心价值。
+- **实战驱动 charter-check 自身演进**：跑真实 cycle 暴露并修复 3 个缺陷（--doc 正则 ADR-0006 / --diff base ADR-0007 / core→models 抓到后修代码）。
+- **设计文档先探查 fixture 再写计划**：execution-plan 的 NexusState/WorkflowNode 构造假设常与实际不符，subagent 要现读 conftest。计划阶段先跑 fixture 探查可省后续调整。
+- **commit 用 `git add <具体文件>` 不用 `-A`**：`-A` 会扫进运行时产物（workflows/*.yaml），跟着 merge 进 release。已 gitignore workflows/*.yaml + web/web-dev.log。
+- **release 前校验 LICENSE 完整性**：master 的 LICENSE 曾是空文件（0 行），靠 github/main 恢复。
 
 ---
 

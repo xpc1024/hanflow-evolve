@@ -1,12 +1,12 @@
 # state.yaml — LOOP 唯一状态真相源 (spec §2.2)
 # 由 write-state.sh 原子更新, 请勿手动编辑
 
-cycle_id: 2026-W29-1.0.2
-current_version: "1.0.1"
-target_version: 1.1.0
-target_theme: learnings-priority
-phase: gate3
-gate_status: awaiting_user
+cycle_id: null
+current_version: 1.1.0
+target_version: null
+target_theme: null
+phase: awaiting_next_cycle
+gate_status: approved
 retry_count: 0
 audit_retry_count: 0
 started_at: 2026-07-16T16:18:12Z
@@ -19,9 +19,9 @@ artifacts:
   execution_plan: null
   test_report: null
 last_error: null
-last_cycle_completed: "2026-07-14"
+last_cycle_completed: 2026-07-17
 last_reminded: null
-site_sync_needed: "true"
+site_sync_needed: true
 revision_feedback: null
 pending_human_topic: null
 artifacts.signals: cycles/2026-W29-1.0.2/signals.json
