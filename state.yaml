@@ -5,7 +5,7 @@ cycle_id: "2026-W30-1.1.1"
 current_version: 1.1.0
 target_version: "1.2.0"
 target_theme: "docker-sandbox"
-phase: human_topic
+phase: plan
 gate_status: approved
 retry_count: 0
 audit_retry_count: 0
