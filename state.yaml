@@ -5,7 +5,7 @@ cycle_id: "2026-W30-1.1.1"
 current_version: 1.1.0
 target_version: "1.2.0"
 target_theme: "docker-sandbox"
-phase: plan
+phase: audit_direction
 gate_status: approved
 retry_count: 0
 audit_retry_count: 0
@@ -25,7 +25,7 @@ site_sync_needed: true
 revision_feedback: null
 pending_human_topic: null
 artifacts.signals: "cycles/2026-W30-1.1.1/signals.json"
-artifacts.direction: cycles/2026-W29-1.0.2/direction.md
+artifacts.direction: "cycles/2026-W30-1.1.1/direction.md"
 artifacts.design: cycles/2026-W29-1.0.2/design.md
 artifacts.test_report: cycles/2026-W29-1.0.2/test-report.md
 artifacts.audit_direction: cycles/2026-W29-1.0.2/audit-direction.md
