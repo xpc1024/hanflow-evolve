@@ -1,0 +1,769 @@
+{
+  "cycle_id": "2026-W30-1.1.1",
+  "scored_at": "2026-07-20T14:15:03+00:00",
+  "degraded": {
+    "gh": "error: gh_not_installed",
+    "competitor": "skipped_by_default"
+  },
+  "signals": [
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/api/routes/observe.py:4",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/api/routes/observe.py",
+        "line": 4,
+        "snippet": "download returns a placeholder URL (signed_url wired in Phase 17).",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      },
+      "score": 47,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 12,
+        "raw_total": 47,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/api/routes/observe.py:48",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/api/routes/observe.py",
+        "line": 48,
+        "snippet": "\"note\": \"signed_url wired in Phase 17\",",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      },
+      "score": 47,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 12,
+        "raw_total": 47,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/isolation/sandbox.py:15",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/isolation/sandbox.py",
+        "line": 15,
+        "snippet": "DOCKER/K8S provisioning is wired in Phase 8/10; Phase 7 ships LOCAL + NONE",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      },
+      "score": 47,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 12,
+        "raw_total": 47,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/isolation/sandbox.py:71",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/isolation/sandbox.py",
+        "line": 71,
+        "snippet": "# Provisioning wired in Phase 8/10; for now allocate an id placeholder.",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      },
+      "score": 47,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 12,
+        "raw_total": 47,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/memory/filesystem.py:5",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/memory/filesystem.py",
+        "line": 5,
+        "snippet": "into a single value (an LLM-backed summariser is wired in Phase 8 via the",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      },
+      "score": 47,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 12,
+        "raw_total": 47,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/persistence/resume.py:9",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/persistence/resume.py",
+        "line": 9,
+        "snippet": "graph) is wired in Phase 8 (orchestration), once the compiler exists. This",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      },
+      "score": 47,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 12,
+        "raw_total": 47,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/tools/builtin/code_exec.py:47",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/tools/builtin/code_exec.py",
+        "line": 47,
+        "snippet": "# docker / firecracker wired in Phase 7 (isolation)",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      },
+      "score": 47,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 12,
+        "raw_total": 47,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/tools/builtin/vector_search.py:42",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/tools/builtin/vector_search.py",
+        "line": 42,
+        "snippet": "raise HanflowError(\"vector_search provider not configured (wired in Phase 5)\")",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      },
+      "score": 47,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 12,
+        "raw_total": 47,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/tools/builtin/web_search.py:42",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/tools/builtin/web_search.py",
+        "line": 42,
+        "snippet": "# Backend-specific implementation wired in Phase 9 (Research atom) /",
+        "pattern": "wired in Phase",
+        "type": "deferred_marker"
+      },
+      "score": 47,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 12,
+        "raw_total": 47,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/models/providers/anthropic.py:73",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/models/providers/anthropic.py",
+        "line": 73,
+        "snippet": "raise NotImplementedError(\"stream() for anthropic lands in next cycle (2026-W30+)\")",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      },
+      "score": 45,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 10,
+        "raw_total": 45,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/models/providers/deepseek.py:32",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/models/providers/deepseek.py",
+        "line": 32,
+        "snippet": "raise NotImplementedError(\"stream() for deepseek lands in next cycle (2026-W30+)\")",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      },
+      "score": 45,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 10,
+        "raw_total": 45,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/models/providers/ollama.py:53",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/models/providers/ollama.py",
+        "line": 53,
+        "snippet": "raise NotImplementedError(\"stream() for ollama lands in next cycle (2026-W30+)\")",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      },
+      "score": 45,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 10,
+        "raw_total": 45,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/models/providers/vllm.py:30",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/models/providers/vllm.py",
+        "line": 30,
+        "snippet": "raise NotImplementedError(\"stream() for vllm lands in next cycle (2026-W30+)\")",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      },
+      "score": 45,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 10,
+        "raw_total": 45,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/observability/provider.py:23",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/observability/provider.py",
+        "line": 23,
+        "snippet": "raise NotImplementedError",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      },
+      "score": 45,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 10,
+        "raw_total": 45,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/observability/provider.py:26",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/observability/provider.py",
+        "line": 26,
+        "snippet": "raise NotImplementedError",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      },
+      "score": 45,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 10,
+        "raw_total": 45,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/observability/trace.py:85",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/observability/trace.py",
+        "line": 85,
+        "snippet": "raise NotImplementedError",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      },
+      "score": 45,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 10,
+        "raw_total": 45,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/observability/trace.py:94",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/observability/trace.py",
+        "line": 94,
+        "snippet": "raise NotImplementedError",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      },
+      "score": 45,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 10,
+        "raw_total": 45,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/persistence/checkpoint.py:83",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/persistence/checkpoint.py",
+        "line": 83,
+        "snippet": "raise NotImplementedError(\"Hanflow uses async checkpoint API only\")",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      },
+      "score": 45,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 10,
+        "raw_total": 45,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/persistence/checkpoint.py:86",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/persistence/checkpoint.py",
+        "line": 86,
+        "snippet": "raise NotImplementedError(\"Hanflow uses async checkpoint API only\")",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      },
+      "score": 45,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 10,
+        "raw_total": 45,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/persistence/checkpoint.py:89",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/persistence/checkpoint.py",
+        "line": 89,
+        "snippet": "raise NotImplementedError(\"Hanflow uses async checkpoint API only\")",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      },
+      "score": 45,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 10,
+        "raw_total": 45,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/persistence/resume.py:93",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/persistence/resume.py",
+        "line": 93,
+        "snippet": "orchestration). Raises NotImplementedError if no runner is set.",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      },
+      "score": 45,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 10,
+        "raw_total": 45,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/persistence/resume.py:96",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/persistence/resume.py",
+        "line": 96,
+        "snippet": "raise NotImplementedError(",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      },
+      "score": 45,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 10,
+        "raw_total": 45,
+        "clamped": false
+      }
+    },
+    {
+      "id": "stub:E:/opensource/hanflow\\hanflow/tools/transport.py:75",
+      "source": "source_stub",
+      "weight_tier": "high",
+      "raw": {
+        "file": "E:/opensource/hanflow\\hanflow/tools/transport.py",
+        "line": 75,
+        "snippet": "raise NotImplementedError(\"remote tool call requires a live MCP server (integration test)\")",
+        "pattern": "NotImplementedError",
+        "type": "stub_impl"
+      },
+      "score": 45,
+      "score_breakdown": {
+        "base_weight": 35,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 10,
+        "raw_total": 45,
+        "clamped": false
+      }
+    },
+    {
+      "id": "learning:1",
+      "source": "learnings",
+      "weight_tier": "high",
+      "raw": {
+        "text": "**DOCKER sandbox 落地 (生产安全边界)** —— 用户明确指定下次优先 (2026-07-17 反馈)。",
+        "index": 1
+      },
+      "score": 40,
+      "score_breakdown": {
+        "base_weight": 40,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 0,
+        "raw_total": 40,
+        "clamped": false
+      }
+    },
+    {
+      "id": "learning:2",
+      "source": "learnings",
+      "weight_tier": "high",
+      "raw": {
+        "text": "~~补齐 LLM 流式输出~~ → 本 cycle (2026-W29-1.0.2) 进行中。",
+        "index": 2
+      },
+      "score": 40,
+      "score_breakdown": {
+        "base_weight": 40,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 0,
+        "raw_total": 40,
+        "clamped": false
+      }
+    },
+    {
+      "id": "learning:3",
+      "source": "learnings",
+      "weight_tier": "high",
+      "raw": {
+        "text": "~~CLI stub 逐个接通 SDK~~ ✓ 已完成 (v1.0.1, 2026-W29)。",
+        "index": 3
+      },
+      "score": 40,
+      "score_breakdown": {
+        "base_weight": 40,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 0,
+        "raw_total": 40,
+        "clamped": false
+      }
+    },
+    {
+      "id": "learning:4",
+      "source": "learnings",
+      "weight_tier": "high",
+      "raw": {
+        "text": "MCP remote transport 实现 (工具生态)。",
+        "index": 4
+      },
+      "score": 40,
+      "score_breakdown": {
+        "base_weight": 40,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 0,
+        "raw_total": 40,
+        "clamped": false
+      }
+    },
+    {
+      "id": "learning:5",
+      "source": "learnings",
+      "weight_tier": "high",
+      "raw": {
+        "text": "[2026-W29] github PAT 配置 (github push 失败, 需配 Access Token)。",
+        "index": 5
+      },
+      "score": 40,
+      "score_breakdown": {
+        "base_weight": 40,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 0,
+        "raw_total": 40,
+        "clamped": false
+      }
+    },
+    {
+      "id": "learning:6",
+      "source": "learnings",
+      "weight_tier": "high",
+      "raw": {
+        "text": "[2026-W29] score-signals.py Windows 路径 bug (affected_modules 显示 \"E:\")。",
+        "index": 6
+      },
+      "score": 40,
+      "score_breakdown": {
+        "base_weight": 40,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 0,
+        "raw_total": 40,
+        "clamped": false
+      }
+    },
+    {
+      "id": "learning:7",
+      "source": "learnings",
+      "weight_tier": "high",
+      "raw": {
+        "text": "[2026-W29] github-sync.sh 适配 master 分支 (当前硬编码 main)。",
+        "index": 7
+      },
+      "score": 40,
+      "score_breakdown": {
+        "base_weight": 40,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 0,
+        "raw_total": 40,
+        "clamped": false
+      }
+    },
+    {
+      "id": "learning:8",
+      "source": "learnings",
+      "weight_tier": "high",
+      "raw": {
+        "text": "[2026-W29] Group B 命令后端 (metrics/search/eval/datasets/worker)。",
+        "index": 8
+      },
+      "score": 40,
+      "score_breakdown": {
+        "base_weight": 40,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 0,
+        "raw_total": 40,
+        "clamped": false
+      }
+    },
+    {
+      "id": "learning:9",
+      "source": "learnings",
+      "weight_tier": "high",
+      "raw": {
+        "text": "引入 pytest-cov 建立覆盖率基线 (低成本, 为后续重构兜底)。",
+        "index": 9
+      },
+      "score": 40,
+      "score_breakdown": {
+        "base_weight": 40,
+        "popularity_bonus": 0,
+        "freshness_bonus": 0,
+        "severity_bonus": 0,
+        "raw_total": 40,
+        "clamped": false
+      }
+    }
+  ],
+  "themes": [
+    {
+      "theme_id": "docker-sandbox",
+      "title": "DOCKER sandbox isolation (production security boundary)",
+      "member_signals": [
+        "learning:1",
+        "stub:E:/opensource/hanflow\\hanflow/isolation/sandbox.py:15",
+        "stub:E:/opensource/hanflow\\hanflow/isolation/sandbox.py:71",
+        "stub:E:/opensource/hanflow\\hanflow/tools/builtin/code_exec.py:47"
+      ],
+      "affected_modules": [
+        "isolation",
+        "tools/builtin"
+      ],
+      "version_impact": "minor",
+      "source": "human_override",
+      "effort": "large",
+      "risk": "medium",
+      "theme_score": 100,
+      "theme_score_breakdown": {
+        "member_score": 47.0,
+        "member_count": 4,
+        "breadth_bonus": 8,
+        "module_count": 2,
+        "learnings_alignment": 12,
+        "effort_penalty": -18,
+        "risk_penalty": -10,
+        "competitor_discounted": false,
+        "human_override": true,
+        "raw_total": 39.0,
+        "note": "human_override: score bypassed, ranked top unconditionally (spec §3.4)"
+      }
+    },
+    {
+      "theme_id": "learnings-priority",
+      "title": "Priorities from LEARNINGS.md",
+      "member_signals": [
+        "learning:1",
+        "learning:2",
+        "learning:3",
+        "learning:4",
+        "learning:5",
+        "learning:6",
+        "learning:7",
+        "learning:8",
+        "learning:9"
+      ],
+      "affected_modules": [],
+      "version_impact": "minor",
+      "source": "learnings",
+      "effort": "medium",
+      "risk": "low",
+      "theme_score": 44,
+      "theme_score_breakdown": {
+        "member_score": 40.0,
+        "member_count": 9,
+        "breadth_bonus": 0,
+        "module_count": 0,
+        "learnings_alignment": 12,
+        "effort_penalty": -8,
+        "risk_penalty": 0,
+        "competitor_discounted": false,
+        "raw_total": 44.0
+      }
+    },
+    {
+      "theme_id": "stub-E:",
+      "title": "Complete source stubs in 'E:' module",
+      "member_signals": [
+        "stub:E:/opensource/hanflow\\hanflow/api/routes/observe.py:4",
+        "stub:E:/opensource/hanflow\\hanflow/api/routes/observe.py:48",
+        "stub:E:/opensource/hanflow\\hanflow/isolation/sandbox.py:15",
+        "stub:E:/opensource/hanflow\\hanflow/isolation/sandbox.py:71",
+        "stub:E:/opensource/hanflow\\hanflow/memory/filesystem.py:5",
+        "stub:E:/opensource/hanflow\\hanflow/persistence/resume.py:9",
+        "stub:E:/opensource/hanflow\\hanflow/tools/builtin/code_exec.py:47",
+        "stub:E:/opensource/hanflow\\hanflow/tools/builtin/vector_search.py:42",
+        "stub:E:/opensource/hanflow\\hanflow/tools/builtin/web_search.py:42",
+        "stub:E:/opensource/hanflow\\hanflow/models/providers/anthropic.py:73",
+        "stub:E:/opensource/hanflow\\hanflow/models/providers/deepseek.py:32",
+        "stub:E:/opensource/hanflow\\hanflow/models/providers/ollama.py:53",
+        "stub:E:/opensource/hanflow\\hanflow/models/providers/vllm.py:30",
+        "stub:E:/opensource/hanflow\\hanflow/observability/provider.py:23",
+        "stub:E:/opensource/hanflow\\hanflow/observability/provider.py:26",
+        "stub:E:/opensource/hanflow\\hanflow/observability/trace.py:85",
+        "stub:E:/opensource/hanflow\\hanflow/observability/trace.py:94",
+        "stub:E:/opensource/hanflow\\hanflow/persistence/checkpoint.py:83",
+        "stub:E:/opensource/hanflow\\hanflow/persistence/checkpoint.py:86",
+        "stub:E:/opensource/hanflow\\hanflow/persistence/checkpoint.py:89",
+        "stub:E:/opensource/hanflow\\hanflow/persistence/resume.py:93",
+        "stub:E:/opensource/hanflow\\hanflow/persistence/resume.py:96",
+        "stub:E:/opensource/hanflow\\hanflow/tools/transport.py:75"
+      ],
+      "affected_modules": [
+        "E:"
+      ],
+      "version_impact": "patch",
+      "source": "source_stub",
+      "effort": "medium",
+      "risk": "low",
+      "theme_score": 38,
+      "theme_score_breakdown": {
+        "member_score": 46.39,
+        "member_count": 23,
+        "breadth_bonus": 0,
+        "module_count": 1,
+        "learnings_alignment": 0,
+        "effort_penalty": -8,
+        "risk_penalty": 0,
+        "competitor_discounted": false,
+        "raw_total": 38.39
+      }
+    }
+  ]
+}

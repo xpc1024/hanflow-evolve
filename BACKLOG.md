@@ -2,7 +2,7 @@
 
 由 LOOP 的 signal + prioritization 阶段自动维护。每个候选**主题 (theme)** 是一个可独立交付的演进单元, 对应一个 release。
 
-> 自动生成于 2026-07-16T16:19:28+00:00 · 共 2 个候选主题 (cycle `2026-W29-1.0.2`)。
+> 自动生成于 2026-07-20T14:17:21+00:00 · 共 3 个候选主题 (cycle `2026-W30-1.1.1`)。
 
 > 排序: `[human_override]` 主题无条件优先; 其余按 prioritization 得分降序。
 
@@ -12,18 +12,25 @@
 
 > 按 prioritization 得分降序。标注 `[HUMAN]` 的条目为 human_override, 无条件优先。
 
-### [1] Priorities from LEARNINGS.md · score 44 · minor · effort medium · risk low
+### [1] DOCKER sandbox isolation (production security boundary) [HUMAN] · score 100 · minor · effort large · risk medium
+
+- **theme_id**: `docker-sandbox`
+- **affected_modules**: `isolation`, `tools/builtin`
+- **source**: `human_override`
+- **member_signals**: `learning:1`, `stub:E:/opensource/hanflow\hanflow/isolation/sandbox.py:15`, `stub:E:/opensource/hanflow\hanflow/isolation/sandbox.py:71`, `stub:E:/opensource/hanflow\hanflow/tools/builtin/code_exec.py:47`
+
+### [2] Priorities from LEARNINGS.md · score 44 · minor · effort medium · risk low
 
 - **theme_id**: `learnings-priority`
 - **source**: `learnings`
 - **member_signals**: `learning:1`, `learning:2`, `learning:3`, `learning:4`, `learning:5`, `learning:6`, `learning:7`, `learning:8`, `learning:9`
 
-### [2] Complete source stubs in 'E:' module · score 38 · patch · effort medium · risk low
+### [3] Complete source stubs in 'E:' module · score 38 · patch · effort medium · risk low
 
 - **theme_id**: `stub-E:`
 - **affected_modules**: `E:`
 - **source**: `source_stub`
-- **member_signals**: `stub:E:/opensource/hanflow\hanflow/api/routes/observe.py:4`, `stub:E:/opensource/hanflow\hanflow/api/routes/observe.py:48`, `stub:E:/opensource/hanflow\hanflow/isolation/sandbox.py:15`, `stub:E:/opensource/hanflow\hanflow/isolation/sandbox.py:71`, `stub:E:/opensource/hanflow\hanflow/memory/filesystem.py:5`, `stub:E:/opensource/hanflow\hanflow/persistence/resume.py:9`, `stub:E:/opensource/hanflow\hanflow/tools/builtin/code_exec.py:47`, `stub:E:/opensource/hanflow\hanflow/tools/builtin/vector_search.py:42`, `stub:E:/opensource/hanflow\hanflow/tools/builtin/web_search.py:42`, `stub:E:/opensource/hanflow\hanflow/observability/provider.py:23`, `stub:E:/opensource/hanflow\hanflow/observability/provider.py:26`, `stub:E:/opensource/hanflow\hanflow/observability/trace.py:85`, `stub:E:/opensource/hanflow\hanflow/observability/trace.py:94`, `stub:E:/opensource/hanflow\hanflow/persistence/checkpoint.py:83`, `stub:E:/opensource/hanflow\hanflow/persistence/checkpoint.py:86`, `stub:E:/opensource/hanflow\hanflow/persistence/checkpoint.py:89`, `stub:E:/opensource/hanflow\hanflow/persistence/resume.py:93`, `stub:E:/opensource/hanflow\hanflow/persistence/resume.py:96`, `stub:E:/opensource/hanflow\hanflow/tools/transport.py:75`
+- **member_signals**: `stub:E:/opensource/hanflow\hanflow/api/routes/observe.py:4`, `stub:E:/opensource/hanflow\hanflow/api/routes/observe.py:48`, `stub:E:/opensource/hanflow\hanflow/isolation/sandbox.py:15`, `stub:E:/opensource/hanflow\hanflow/isolation/sandbox.py:71`, `stub:E:/opensource/hanflow\hanflow/memory/filesystem.py:5`, `stub:E:/opensource/hanflow\hanflow/persistence/resume.py:9`, `stub:E:/opensource/hanflow\hanflow/tools/builtin/code_exec.py:47`, `stub:E:/opensource/hanflow\hanflow/tools/builtin/vector_search.py:42`, `stub:E:/opensource/hanflow\hanflow/tools/builtin/web_search.py:42`, `stub:E:/opensource/hanflow\hanflow/models/providers/anthropic.py:73`, `stub:E:/opensource/hanflow\hanflow/models/providers/deepseek.py:32`, `stub:E:/opensource/hanflow\hanflow/models/providers/ollama.py:53`, `stub:E:/opensource/hanflow\hanflow/models/providers/vllm.py:30`, `stub:E:/opensource/hanflow\hanflow/observability/provider.py:23`, `stub:E:/opensource/hanflow\hanflow/observability/provider.py:26`, `stub:E:/opensource/hanflow\hanflow/observability/trace.py:85`, `stub:E:/opensource/hanflow\hanflow/observability/trace.py:94`, `stub:E:/opensource/hanflow\hanflow/persistence/checkpoint.py:83`, `stub:E:/opensource/hanflow\hanflow/persistence/checkpoint.py:86`, `stub:E:/opensource/hanflow\hanflow/persistence/checkpoint.py:89`, `stub:E:/opensource/hanflow\hanflow/persistence/resume.py:93`, `stub:E:/opensource/hanflow\hanflow/persistence/resume.py:96`, `stub:E:/opensource/hanflow\hanflow/tools/transport.py:75`
 
 ---
 
