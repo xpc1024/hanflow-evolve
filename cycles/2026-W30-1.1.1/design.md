@@ -6,6 +6,8 @@
 - direction: `cycles/2026-W30-1.1.1/direction.md`(Gate 1 已确认)
 - P3b AUDIT 结论: 通过(2 严重已清零 / 0 轻微剩余),无需 ADR(类型上移属于 §3 依赖矩阵内合规重构,不改公开 API;`SandboxMode` 仍是同一个 StrEnum,isolation re-export 维持向后兼容)
 
+> **术语约定**:本 cycle(2026-W30-1.1.1) 即源码 docstring 中的 "Phase 8"(DOCKER sandbox 落地);K8S provisioning 是 "Phase 10"(未来 cycle)。Phase 编号是 hanflow 演进路线的历史标识,cycle_id 是 LOOP 系统的版本标识,两者关系:`Phase 8 == 2026-W30-1.1.1`、`Phase 10 == <未来 K8S cycle>`。
+
 > 本设计采纳 P3b 审计的两条严重修订建议(类型上移 + dedicated_sandbox 澄清),并清理探查阶段发现的 3 处额外技术债(`CodeExecServer.mode` 词表不一致 / `enforce_tool_whitelist` 滥用基类错误 / `spawn_agent` 忽略 span_id)。
 
 ---
@@ -91,7 +93,7 @@ class RunSandbox(BaseModel):
         """LOCAL/NONE 向后兼容快捷方式 (deprecated for DOCKER/K8S)。
 
         DOCKER/K8S 档请走 runtime.build_sandbox(), 由组合根注入 provisioner。
-        此处保留仅为不破坏现有 4 处调用点 (tests × 4 + sdk.py:130)。
+        此处保留仅为不破坏现有 5 处调用点 (tests/isolation × 4 + tests/conftest.py:118 + sdk.py:130)。
         """
         ws = workspace_mgr.workspace_for(run_id)
         return cls(
@@ -103,41 +105,16 @@ class RunSandbox(BaseModel):
         )
 ```
 
-新增 Protocol + ProvisionedSandbox:
+新增 Protocol + ProvisionedSandbox(**定义顺序: ExecInterface → ProvisionedSandbox → SandboxProvisioner,消除前向引用**):
 
 ```python
-@runtime_checkable
-class SandboxProvisioner(Protocol):
-    """L0 契约:把 RunSandbox(数据) provision 成可执行的 ProvisionedSandbox。
-
-    实现在 L4 isolation/(Local/Docker/K8s), 组合根 runtime/build_sandbox.py 注入。
-    §2.5 per-run 不变量: provision 只接受 run 级 RunSandbox, 不接受 per-agent spec。
-    """
-    name: str
-
-    async def provision(self, run_sandbox: RunSandbox) -> ProvisionedSandbox: ...
-
-    async def destroy(self, provisioned: ProvisionedSandbox) -> None: ...
-
-
-class ProvisionedSandbox(BaseModel):
-    """provision 的产物: 容器/进程句柄 + 执行接口 + 销毁钩子。
-
-    exec_interface 是后端无关的执行抽象(见下文 ExecInterface Protocol);
-    LocalProvisioner 用 host subprocess 实现, DockerProvisioner 用 docker exec。
-    """
-    run_id: str
-    mode: SandboxMode
-    container_id: str | None = None      # LOCAL/NONE 为 None; DOCKER/K8S 必填
-    exec_interface: ExecInterface        # 见组件 #2
-    workspace_root: Path                 # bind mount 或 host 路径(container 内外皆可)
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
+# 顺序约定(与 core/context.py 的 "Protocol 在前, 实现在后" 惯例一致)
 
 class ExecInterface(Protocol):
     """容器/进程内执行代码的后端无关接口(供 code_exec 等工具复用)。
 
     返回与现有 _exec_local() 同构的 dict, 保证 call site 同构。
+    timeout 超时由实现内部包成 SandboxTimeoutError 抛出(见错误处理章)。
     """
     async def run(
         self,
@@ -147,12 +124,42 @@ class ExecInterface(Protocol):
         timeout: int = 30,
         cwd: str | None = None,
     ) -> dict[str, Any]:
-        """返回 {"stdout": str, "stderr": str, "returncode": int}。"""
+        """返回 {"stdout": str, "stderr": str, "returncode": int}。
+        超时抛 SandboxTimeoutError; 其它失败抛 SandboxError 子类。"""
         ...
+
+
+class ProvisionedSandbox(BaseModel):
+    """provision 的产物: 容器/进程句柄 + 执行接口。
+
+    exec_interface 是后端无关的执行抽象(见上文 ExecInterface Protocol);
+    LocalProvisioner 用 host subprocess 实现, DockerProvisioner 用 docker exec。
+    """
+    run_id: str
+    mode: SandboxMode
+    container_id: str | None = None      # LOCAL/NONE 为 None; DOCKER/K8S 必填
+    exec_interface: ExecInterface        # 引用已定义的 ExecInterface(无前向引用)
+    workspace_root: Path                 # bind mount 或 host 路径; DOCKER 档为容器内视角(如 /workspace)
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+
+@runtime_checkable
+class SandboxProvisioner(Protocol):
+    """L0 契约:把 RunSandbox(数据) provision 成可执行的 ProvisionedSandbox。
+
+    实现在 L4 isolation/(Local/Docker/K8s), 组合根 runtime/build_sandbox.py 注入。
+    §2.5 per-run 不变量: provision 只接受 run 级 RunSandbox, 不接受 per-agent spec。
+    """
+    name: str
+
+    async def provision(self, run_sandbox: RunSandbox) -> ProvisionedSandbox: ...  # 引用已定义
+
+    async def destroy(self, provisioned: ProvisionedSandbox) -> None: ...
 ```
 
 **设计决策**:
 - **为什么 Protocol 落 core 而非 isolation**:依赖倒置。Protocol 在 core 让组合根 + isolation 实现都依赖契约(L0),无 core→isolation 反向 import;同时 `RuntimeContextImpl` 可经 Protocol 引用 provisioned sandbox 而无需 import 具体类。
+- **类型定义顺序(审计清理 #4)**:`ExecInterface` → `ProvisionedSandbox` → `SandboxProvisioner`,与 `core/context.py`(Protocol 在前,实现在后)惯例对齐,消除前向引用歧义。
 - **为什么 `ProvisionedSandbox` 用 Pydantic 而非 dataclass**:CHARTER §2.3(配置/数据模型走 BaseModel);与现有 `RunSandbox/SandboxResources` 一致。
 - **`ExecInterface` 抽象的代价**:多一层 Protocol,但收益是 code_exec / shell / 未来 firecracker 都能复用同一执行接口,避免每个工具各写一套 docker exec 调用。
 - **`network_egress` 语义简化**:本 cycle 只做 `None`(默认,`--network=none` 完全禁网)与 `["*"]`(显式 opt-in `--network=host`);细粒度 ACL 引擎明确排除(非目标)。`list[str]` 字段保留是为未来扩展,本 cycle 实现只检查"是否为 None"。
@@ -162,19 +169,21 @@ class ExecInterface(Protocol):
 ```python
 # hanflow/isolation/local_provisioner.py
 from __future__ import annotations
-import asyncio, sys
+import asyncio
 from pathlib import Path
 from typing import Any
+from hanflow.core.errors import SandboxTimeoutError
 from hanflow.core.sandbox_contract import (
-    ExecInterface, ProvisionedSandbox, RunSandbox, SandboxMode, SandboxProvisioner,
+    ExecInterface, ProvisionedSandbox, RunSandbox, SandboxMode,
 )
 
 
 class _LocalExec(ExecInterface):
     """host subprocess 执行(包装现有 _exec_local 行为)。"""
 
-    def __init__(self, workspace_root: Path) -> None:
+    def __init__(self, workspace_root: Path, run_id: str) -> None:
         self._ws = workspace_root
+        self._run_id = run_id
 
     async def run(self, *, command, stdin=None, timeout=30, cwd=None) -> dict[str, Any]:
         proc = await asyncio.create_subprocess_exec(
@@ -191,7 +200,11 @@ class _LocalExec(ExecInterface):
             )
         except TimeoutError:
             proc.kill()
-            raise  # 由调用方包成 SandboxTimeoutError(见错误处理)
+            raise SandboxTimeoutError(   # 内部就包, 不让 TimeoutError 漏给调用方
+                f"local exec timed out after {timeout}s",
+                run_id=self._run_id,
+                details={"command": command, "timeout": timeout},
+            ) from None
         stdout, stderr = data
         return {
             "stdout": stdout.decode(errors="replace"),
@@ -211,7 +224,7 @@ class LocalProvisioner:
             run_id=run_sandbox.run_id,
             mode=SandboxMode.LOCAL,
             container_id=None,
-            exec_interface=_LocalExec(run_sandbox.workspace_root),
+            exec_interface=_LocalExec(run_sandbox.workspace_root, run_sandbox.run_id),
             workspace_root=run_sandbox.workspace_root,
         )
 
@@ -226,23 +239,34 @@ class LocalProvisioner:
 from __future__ import annotations
 from pathlib import Path
 from typing import Any
-from hanflow.core.errors import SandboxError
+from hanflow.core.errors import (
+    SandboxDependencyMissingError, SandboxDestroyFailedError,
+    SandboxProvisionFailedError, SandboxTimeoutError,
+)
 from hanflow.core.sandbox_contract import (
-    ExecInterface, ProvisionedSandbox, RunSandbox, SandboxMode, SandboxProvisioner,
-    SandboxResources,
+    ExecInterface, ProvisionedSandbox, RunSandbox, SandboxMode, SandboxResources,
 )
 
 
 class _DockerExec(ExecInterface):
     """docker exec 执行接口。container 已由 provision 创建。"""
-    def __init__(self, container_id: str, workspace_in_container: str) -> None:
+    def __init__(self, container_id: str, workspace_in_container: str, run_id: str) -> None:
         self._cid = container_id
         self._ws = workspace_in_container
+        self._run_id = run_id
 
     async def run(self, *, command, stdin=None, timeout=30, cwd=None) -> dict[str, Any]:
-        # lazy import: aiodocker 在 _run_inner 里, 触发 SANDBOX_DEP_MISSING 早
-        from aiodocker import Docker  # noqa: F401  (见错误处理)
-        # 组装 docker exec 调用, 解码 stdout/stderr, 守护 timeout
+        # lazy import: aiodocker 在方法内, 触发 SANDBOX_DEP_MISSING 早
+        try:
+            from aiodocker import Docker, DockerError
+        except ImportError as exc:
+            raise SandboxDependencyMissingError(
+                "aiodocker not installed; pip install 'hanflow[docker]'",
+                run_id=self._run_id,
+            ) from exc
+        # 组装 docker exec 调用: exec_create + exec_start, 解码 stdout/stderr,
+        # 提取 returncode, 用 asyncio.wait_for 守护 timeout → 抛 SandboxTimeoutError
+        # (实现细节留 execute 阶段)
         ...
 
 
@@ -256,7 +280,14 @@ class DockerProvisioner:
     async def provision(self, run_sandbox: RunSandbox) -> ProvisionedSandbox:
         if run_sandbox.mode != SandboxMode.DOCKER:
             raise ValueError(f"DockerProvisioner got mode={run_sandbox.mode}")
-        from aiodocker import Docker, DockerError  # lazy: 触发 dep_missing 早
+        try:
+            from aiodocker import Docker, DockerError  # lazy: 触发 dep_missing 早
+        except ImportError as exc:
+            raise SandboxDependencyMissingError(
+                "aiodocker not installed; pip install 'hanflow[docker]'",
+                run_id=run_sandbox.run_id,
+            ) from exc
+
         client = Docker()
         try:
             container = await client.containers.create_or_replace(
@@ -266,9 +297,9 @@ class DockerProvisioner:
             await container.start()
             cid = container.id
         except DockerError as exc:
-            raise SandboxError(
+            # 用具体子类(不传 code= kwarg, 见错误处理章)
+            raise SandboxProvisionFailedError(
                 f"docker provision failed: {exc}",
-                code="SANDBOX_PROVISION_FAILED",
                 run_id=run_sandbox.run_id,
                 details={"image": self._image, "docker_error": str(exc)},
             ) from exc
@@ -279,7 +310,7 @@ class DockerProvisioner:
             run_id=run_sandbox.run_id,
             mode=SandboxMode.DOCKER,
             container_id=cid,
-            exec_interface=_DockerExec(cid, "/workspace"),
+            exec_interface=_DockerExec(cid, "/workspace", run_sandbox.run_id),
             workspace_root=Path("/workspace"),  # 容器内视角
         )
 
@@ -309,11 +340,9 @@ class DockerProvisioner:
             await c.kill()
             await c.delete()
         except DockerError as exc:
-            raise SandboxError(
+            raise SandboxDestroyFailedError(   # 具体子类, retryable=True 由类属性定义
                 f"docker destroy failed: {exc}",
-                code="SANDBOX_DESTROY_FAILED",
                 run_id=provisioned.run_id,
-                retryable=True,
                 details={"container_id": provisioned.container_id},
             ) from exc
         finally:
@@ -351,6 +380,7 @@ from hanflow.core.errors import SandboxError
 from hanflow.core.sandbox_contract import (
     ProvisionedSandbox, RunSandbox, SandboxMode, SandboxProvisioner, SandboxResources,
 )
+from hanflow.core.errors import SandboxProvisionFailedError
 
 
 async def build_sandbox(
@@ -381,10 +411,10 @@ async def build_sandbox(
         from hanflow.isolation.local_provisioner import LocalProvisioner
         provisioner = LocalProvisioner()  # NONE 复用 host exec, 但 context isolation 仍在
     else:
-        raise SandboxError(
+        raise SandboxProvisionFailedError(   # 具体子类, 不传 code= kwarg
             f"unsupported sandbox mode: {mode!r}",
-            code="SANDBOX_PROVISION_FAILED",
             run_id=run_id,
+            details={"mode": str(mode)},
         )
 
     provisioned = await provisioner.provision(sb)
@@ -494,7 +524,9 @@ from pathlib import Path
 from typing import Any
 from pydantic import BaseModel
 from hanflow.core.context import FakeContext
-from hanflow.core.errors import HanflowError, ToolWhitelistError  # 新错误子类(见错误处理)
+from hanflow.core.errors import (
+    HanflowError, SandboxError, SandboxProvisionFailedError, ToolWhitelistError,
+)
 from hanflow.core.sandbox_contract import (
     ProvisionedSandbox, RunSandbox, SandboxMode, SandboxResources,
     SandboxProvisioner,  # re-export
@@ -521,7 +553,11 @@ async def spawn_agent(
     trace: TraceExporter,
     provisioned: ProvisionedSandbox | None = None,   # 新增: 可选注入
 ) -> Any:
-    """§13.6 单一入口。dedicated_sandbox 分支复用 run container + 容器内 subdir。"""
+    """§13.6 单一入口。所有子 agent 共享 run sandbox(per-run 不变量 §2.5)。
+
+    dedicated_sandbox=True 与 False 都**复用 run container + 容器内 subdir**,
+    不 provision per-agent 容器(见 direction 非目标 #3 + 目标 #7)。
+    """
     async with trace.span(
         "agent.spawn", kind="workflow", sub_agent=spec.sub_agent, role=spec.role,
     ) as sp:  # 现在用上 span (审计清理 #3)
@@ -530,22 +566,31 @@ async def spawn_agent(
             "messages": [], "node_states": [], "memory_ops": [], "pending_hitl": None,
         })
 
-        # subdir 路径: host 模式下落 workspace_root; DOCKER 模式下若 provisioned 注入,
-        # 落容器内 /workspace 下(dedicated_sandbox 复用 container, 不新 provision)
         subdir_name = f"agent-{uuid.uuid4().hex[:8]}"
-        if spec.dedicated_sandbox and provisioned is not None and provisioned.mode == SandboxMode.DOCKER:
-            # §2.5: dedicated_sandbox 复用 run container, 只多一个容器内 subdir
+
+        # 关键(round 1 修订): DOCKER 档下所有子 agent(dedicated 与否)的 subdir
+        # 都落 provisioned.workspace_root(容器内视角, 经 bind mount 映射)。
+        # 若落 run_sandbox.workspace_root(host 路径), 容器内只 bind 了 /workspace,
+        # 子 agent 写到 host 路径容器内看不到 → 数据流断裂。
+        if provisioned is not None and provisioned.mode == SandboxMode.DOCKER:
+            # §2.5: 复用 run container, 只多一个容器内 subdir(dedicated 与否一致)
             subdir = str(provisioned.workspace_root / subdir_name)
             try:
                 await provisioned.exec_interface.run(
                     command=["mkdir", "-p", subdir], timeout=5,
                 )
+            except SandboxError:
+                # 专用子类(SandboxTimeoutError 等)透传, 保留 code + retryable(§5 禁止吞)
+                raise
             except Exception as exc:
-                raise HanflowError(
+                # 非 Sandbox 异常才包成 provision_failed(避免吞专用子类)
+                raise SandboxProvisionFailedError(
                     f"failed to allocate subdir in container: {exc}",
                     run_id=run_sandbox.run_id,
+                    details={"subdir": subdir},
                 ) from exc
         else:
+            # LOCAL/NONE: 落 host workspace_root
             subdir = str(run_sandbox.workspace_root / subdir_name)
             Path(subdir).mkdir(parents=True, exist_ok=True)
         spec.workspace_subdir = subdir
@@ -639,17 +684,17 @@ class K8sProvisioner: ...   # 见组件 #4, 占位
 
 ## 错误处理 / HanflowError
 
-新增 3 个错误子类(落 `core/errors.py`,遵循现有 15 个子类的命名 + code 模式):
+新增 6 个错误子类(落 `core/errors.py`,**严格遵循现有 15 个子类的模式:`code` 与 `retryable` 是类属性,通过子类覆盖,不在 `__init__` 传 kwarg**):
 
 ```python
 # hanflow/core/errors.py (追加)
 class SandboxError(HanflowError):
-    """Sandbox provisioning/destroy 失败的基类。"""
+    """Sandbox provisioning/destroy/exec 失败的基类。"""
     code = "SANDBOX_ERROR"
 
 
 class SandboxProvisionFailedError(SandboxError):
-    code = "SANDBOX_PROVISION_FAILED"   # 容器创建/启动失败 (非 retryable)
+    code = "SANDBOX_PROVISION_FAILED"   # 容器创建/启动失败 / 不支持的 mode (非 retryable)
 
 
 class SandboxDestroyFailedError(SandboxError):
@@ -671,19 +716,32 @@ class ToolWhitelistError(HanflowError):
     code = "TOOL_WHITELIST"
 ```
 
+**实例化模式(关键,审计 round 1 修订)**:`HanflowError.__init__(self, message="", *, run_id=None, node_id=None, span_id=None, details=None)` **不接受 `code=` kwarg**——`code` 是类属性,通过子类覆盖。所有抛错必须用**具体子类**,不传 `code=`:
+
+```python
+# ✗ 错误(round 1 bug, 已修)
+raise SandboxError("...", code="SANDBOX_PROVISION_FAILED", run_id=rid)  # TypeError
+
+# ✓ 正确(round 2)
+raise SandboxProvisionFailedError("...", run_id=rid, details={...})     # code 来自类属性
+```
+
 **错误映射**:
 
 | 场景 | 异常 | retryable | 谁抛 |
 |---|---|---|---|
-| `aiodocker` 未装 | `SandboxDependencyMissingError` | False | DockerProvisioner.provision 顶部 |
-| container create/start 失败 | `SandboxProvisionFailedError` | False | DockerProvisioner.provision |
-| exec 或 container 超时 | `SandboxTimeoutError` | True | _DockerExec.run / _LocalExec.run |
-| container kill/delete 失败 | `SandboxDestroyFailedError` | True | DockerProvisioner.destroy |
-| 工具不在白名单 | `ToolWhitelistError` | False | enforce_tool_whitelist |
+| `aiodocker` 未装 | `SandboxDependencyMissingError` | False | `DockerProvisioner.provision` 顶部 + `_DockerExec.run` 顶部 lazy import |
+| container create/start 失败 | `SandboxProvisionFailedError` | False | `DockerProvisioner.provision` |
+| 不支持的 sandbox mode | `SandboxProvisionFailedError` | False | `build_sandbox` |
+| exec 或 container 超时 | `SandboxTimeoutError` | True | `_LocalExec.run` / `_DockerExec.run`(**内部包**,不让 TimeoutError 漏给调用方) |
+| container kill/delete 失败 | `SandboxDestroyFailedError` | True | `DockerProvisioner.destroy` |
+| 工具不在白名单 | `ToolWhitelistError` | False | `enforce_tool_whitelist` |
 
 **atoms 永不吞异常**(§2.1):所有 SandboxError 由 orchestration 包装层(`RuntimeContextImpl.tool_call`)捕获,记录 `NodeState.error` + trace error span,再按 `on_error` 策略推进。
 
-**lazy import 早期失败原则**:`from aiodocker import Docker` 在 `DockerProvisioner.provision` 顶部而非模块顶部,让 `ImportError` 立即包成 `SandboxDependencyMissingError`,而非模块加载失败。
+**§5 禁止吞异常(round 1 修订)**:`spawn_agent` 与 provisioner 的 `except` 块**禁止用基类 `HanflowError` 重抛**——专用子类(`SandboxTimeoutError` 等)的 `code`/`retryable` 必须保留。正确写法:`except SandboxError: raise`(透传专用子类)+ `except Exception as exc: raise SandboxProvisionFailedError(...) from exc`(只包非 Sandbox 异常)。
+
+**lazy import 早期失败原则**:`from aiodocker import Docker` 在 `DockerProvisioner.provision` / `_DockerExec.run` 方法内顶部而非模块顶部,让 `ImportError` 立即包成 `SandboxDependencyMissingError`,而非模块加载失败。
 
 ---
 
@@ -717,6 +775,16 @@ class ToolWhitelistError(HanflowError):
    - `runtime → isolation` ✓(已有,合规)
    - **不新增** core→isolation(被守护脚本禁止)
 
+7. **dedicated_sandbox 契约单测(direction 验收 #8 落实)**
+   - `_FakeProvisioner` 记录 `provision()` 调用次数与参数。
+   - `spawn_agent(spec.dedicated_sandbox=True, provisioned=<fake>)` 后断言:
+     - `provisioner.provision.call_count == 0`(dedicated 不新 provision 容器,只复用 run container)
+     - subdir 落在 `provisioned.workspace_root / "agent-xxx"` 下(容器内视角)
+   - `spawn_agent(spec.dedicated_sandbox=False, provisioned=<fake>)` 后断言:
+     - `provisioner.provision.call_count == 0`(同样不新 provision)
+     - subdir 仍落 `provisioned.workspace_root / "agent-xxx"`(与 dedicated 一致,数据流不断裂)
+   - 双向验证 dedicated=True/False 在 DOCKER 档下**共享同一个 run container**,差异只在 subdir 名字不同。
+
 ### 测试目录结构
 
 ```
@@ -738,6 +806,8 @@ tests/
 ## 前端影响
 
 **无前端改动**。本 cycle 只动 SDK + core + isolation + tools,API/CLI 暴露 sandbox 配置明确排除(非目标 #6)。`web/` 与 `hanflow-site/` 不受影响。
+
+**CLI/API 影响证据(审计 round 1 采纳)**:经源码 grep 核实,`hanflow/cli/` 与 `hanflow/api/` 当前**不 import `SandboxMode` 或 `RunSandbox`**(生产路径只有 `sdk.py:130-134` 用 `RunSandbox.create`),本 cycle 对 CLI/API 无破坏。CLI/API 暴露 sandbox 配置是下个 cycle 的主题(非目标 #6)。
 
 `config.yaml` 新增 `isolation` 段是配置而非前端:
 
@@ -796,6 +866,8 @@ isolation:
 2. **charter-check layering**: `grep "from hanflow.isolation" hanflow/core/sandbox_contract.py` 返回空(无反向 import)。
 3. **`RuntimeContext` Protocol 不加 `provisioned()`**(避免污染 nodes 接口);provisioned 经 `RuntimeContextImpl` 私有持有 + 工具构造时注入。
 4. fake provisioner 测试覆盖 build_sandbox 全 4 档分派;LocalProvisioner 真起 subprocess;DockerProvisioner skipif 守护。
-5. 现有 `tests/isolation/test_sandbox.py` 4 个调用点 0 改动,全绿。
-6. `SandboxError` 层级:基类 + 4 子类(provision/destroy/timeout/dep_missing)+ `ToolWhitelistError`,code 全 UPPER_SNAKE_CASE 带 SANDBOX_ 或 TOOL_ 前缀。
+5. 现有 `tests/isolation/test_sandbox.py` + `tests/conftest.py` 共 5 处 `RunSandbox.create()` 调用点 0 改动,全绿。
+6. `SandboxError` 层级:基类 + 4 子类(provision/destroy/timeout/dep_missing)+ `ToolWhitelistError`,code 全 UPPER_SNAKE_CASE 带 SANDBOX_ 或 TOOL_ 前缀。**所有抛错用具体子类,不传 `code=` kwarg**(`code` 是类属性)。
 7. `core/__init__.py.__all__` 追加导出新类型(遵循现有分组注释)。
+8. **dedicated_sandbox 契约单测守护(direction 验收 #8 落实)**:`spawn_agent(spec.dedicated_sandbox=True)` 与 `dedicated_sandbox=False` 两种情况,`provisioner.provision` 调用次数都为 0(不新 provision per-agent 容器);DOCKER 档下两种情况 subdir 都落 `provisioned.workspace_root`(容器内视角,数据流不断裂)。
+9. **spawn_agent 错误透传**:`spawn_agent` 的 `except` 块对 `SandboxError` 子类直接 `raise`(透传 code/retryable),只对非 Sandbox 异常包成 `SandboxProvisionFailedError`(单测验证 `SandboxTimeoutError` 不被降级成基类)。
