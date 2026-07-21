@@ -74,6 +74,7 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 - **[2026-W30-1.1.1] mypy 在 Python 3.13 + numpy stub 上无法运行**: mypy 2.3 不支持 `type` 语句,numpy stub 用了它。本 cycle mypy 完全跑不起来(P9 verify 标记为环境阻塞)。考虑 pin mypy 或用 standalone Python 3.12 container。
 - **[2026-W30-1.1.1] smoke-test.sh from_yaml bug 已修**: 原脚本 `WorkflowDSL.from_yaml(path)` 传文件路径,实际 API 接受 YAML 文本。`yaml.safe_load(裸字符串)` 返回字符串本身 → pydantic 拒绝。commit `aa4763d` 已修。顺手修了内嵌 yaml 用 `list[WorkflowNode]` + NodeType 字面量(原是 dict-of-dicts + kind)。
 - **[2026-W30-1.1.1] Windows 路径在容器/POSIX 上下文下必须手动 POSIX 化**: `Path("/workspace") / "agent-x"` 在 Windows host 上返回 `\workspace\agent-x`,Docker container 内无法识别。spawn_agent 用 `str(...).replace("\\", "/")` + 字符串拼接绕过。**新增规则:任何涉及容器内路径都用字符串拼接,不用 Path /**。
+- **[2026-W30-1.1.1] site_sync 的空头承诺问题已修**: cycle 2026-W29-1.0.2 与 2026-W30-1.1.1 都标记 `site_sync_needed: true`, 但 release 阶段从未实际执行 Phase C(github-sync.sh 只实现 Phase A, 注释把 Phase B/C 推给"调用方外部触发", 但 SKILL 也没做)。vercel 上官网版本停在 1.0.1(hanflow 已到 1.2.0)。用户 2026-07-21 反馈后,**新规则**:hanflow 版本号变化即同步(取代原"仅 feat/BREAKING"); 新增 `scripts/site-sync.sh`(幂等); github-sync.sh 集成 Phase A/B/C 三阶段; LEARNINGS "流程偏好"记录新规则。下次 release 起自动同步 site,无需人工。
 - **[2026-W30-1.1.1] score-signals.py Windows 路径 bug 仍未修** (LEARNINGS #6 旧账): 本 cycle 再次复现——所有 source_stub 信号被错聚成 `stub-E:` 主题(drive letter 当 module 名)。需修 `_signal_module()` 跳过 Windows 盘符。
 - **CLI stub 命令已补全 (v1.0.1)**: 17 个命令全部实现 (12 真实 + 5 降级)。不再阻塞。
 - **DOCKER/K8S sandbox → DOCKER 已落地**: Phase 8 = cycle 2026-W30-1.1.1 已实现 DOCKER 档(LOCAL/DOCKER/NONE 三档可用);K8S(Phase 10)仍占位。`hanflow/isolation/sandbox.py` docstring 已更新。
@@ -150,8 +151,17 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 ### 流程偏好
 
 - **3 个硬门 (hard gates)**: direction / design / execute 后各设审计门, 不过不进下一阶段。
-- **官网仅特性变化同步**: `release.site_sync.on_feature_change_only: true` — 纯 fix/refactor
-  不触发 hanflow-site 重建, 减少噪声。
+- **[2026-07-21 修订] 官网版本联动规则**: 取代原 "仅特性变化同步"(spec §5.5)。
+  **新规则: hanflow 任何版本号变化(patch/minor/major), hanflow-site 必须同步**,
+  由 `scripts/site-sync.sh` 自动执行(github-sync.sh Phase C 无条件调用, 内部幂等):
+  - cp `content/<prev>/` → `content/<LATEST>/`(placeholder 内容,实际 mdx 重写是独立 cycle)
+  - 改 `lib/versions.ts`(VERSIONS 数组 + LATEST_VERSION)
+  - 改 `package.json` version 字段
+  - 改 `content/<LATEST>/{en,zh}/core-concepts/dsl-syntax.mdx` frontmatter
+  - `npm run test`(vitest 必过;tests 已用 LATEST_VERSION const, 自动跟随)
+  - git commit + push(vercel 自动重建)
+  - **幂等**: content/<LATEST>/ 已存在且 LATEST 已对 → exit 0 no-op
+  - 内容重生成(描述新特性的 mdx 实际改写)留给独立 "内容 cycle", 版本切换器先工作起来
 - **竞品权重最低**: `prioritization.source_weights.competitor: 15` (github/learnings=40,
   source_stub=35) — 竞品观察只作灵感, 不驱动路线。
 - **retro 必做**: `learning.retro_required: true` — 每个 cycle 必须产出 retro 并更新本文件。
