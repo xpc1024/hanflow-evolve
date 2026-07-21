@@ -82,16 +82,19 @@ try:
 name: smoke
 version: '1'
 nodes:
-  start:
-    kind: atom
-    next: end
-  end:
-    kind: atom
+  - id: start
+    type: Sequential
+  - id: end
+    type: Sequential
+outputs: {}
 '''
     with tempfile.NamedTemporaryFile('w', suffix='.yaml', delete=False, encoding='utf-8') as fh:
         fh.write(yaml_text)
         path = fh.name
-    WorkflowDSL.from_yaml(path)
+    # WorkflowDSL.from_yaml takes YAML text, not a file path.
+    # (yaml.safe_load on a bare path string returns the string itself.)
+    with open(path, encoding='utf-8') as fh:
+        WorkflowDSL.from_yaml(fh.read())
     print('ok')
 except Exception as e:
     # DSL 解析对未知 kind 可能抛错; 这里只要 WorkflowDSL 可调用即视为框架可校验。
@@ -136,7 +139,9 @@ last_err = None
 for y in yamls:
     try:
         from hanflow.core.dsl import WorkflowDSL
-        WorkflowDSL.from_yaml(y)   # 能解析就算跑通 (真实 run 需完整编译器, 此处只冒烟)
+        # from_yaml takes YAML text; read file content first.
+        with open(y, encoding='utf-8') as fh:
+            WorkflowDSL.from_yaml(fh.read())   # 能解析就算跑通 (真实 run 需完整编译器, 此处只冒烟)
         ran = True
         break
     except Exception as e:
