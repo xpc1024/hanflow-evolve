@@ -20,7 +20,7 @@ S4. 归档与清理 ─── 写 CONTRIBUTIONS.md + 抹 token + state.phase=sub
 **定位**:verify(P12)已覆盖测试 + smoke + auto-fix。S0 **不重复测试**,只补 verify 不覆盖的
 "提交就绪性"检查。诚实讲,把测试再跑一遍是和 verify 重复劳动。
 
-执行 `bash scripts/pr-readiness-check.sh <evolve_home>`:
+执行 `bash scripts/pr-readiness-check.sh <hanflow_repo>`:
 
 | 检查项 | 来源 | 说明 |
 |--------|------|------|
@@ -63,7 +63,7 @@ S4. 归档与清理 ─── 写 CONTRIBUTIONS.md + 抹 token + state.phase=sub
 
 ## S2. 代码 PR(主,必做)
 
-执行 `bash scripts/submit.sh <evolve_home> hanflow`:
+执行 `bash scripts/submit.sh <hanflow_repo> hanflow`:
 
 1. **fork 同步检查**:fetch upstream main,若 fork 落后则 rebase(失败决策见 §8.1)
 2. **push 到 fork**:`git push contribute-fork evolve/$CYCLE_ID`
@@ -121,7 +121,7 @@ release.md 的 site_sync_needed 逻辑(扫 feat:/BREAKING commits)。
 
 仓库指向 **hanflow-site**(github-only,无 gitee,Vercel 部署):
 ```bash
-bash scripts/submit.sh <evolve_home> hanflow-site
+bash scripts/submit.sh <hanflow_repo> hanflow-site
 ```
 
 文档版本目录:`content/<version>/<locale>/`(当前 1.0.1,locale en+zh)。
@@ -132,7 +132,7 @@ bash scripts/submit.sh <evolve_home> hanflow-site
 
 ## S4. 归档与清理
 
-1. **写贡献档案**:`bash scripts/write-contribution.sh <evolve_home>`
+1. **写贡献档案**:`bash scripts/write-contribution.sh <hanflow_repo>`
    追加一条记录到 CONTRIBUTIONS.md:
    ```markdown
    ## <cycle_id> · <type>: <summary> · @<username>
@@ -146,7 +146,7 @@ bash scripts/submit.sh <evolve_home> hanflow-site
    - merged: -
    ```
 
-2. **刷新状态**(触发点 1):`bash scripts/refresh-status.sh <evolve_home>`
+2. **刷新状态**(触发点 1):`bash scripts/refresh-status.sh <hanflow_repo>`
    校验刚发的 PR URL 真实可达,写完整记录。
 
 3. **抹除 token**(默认 PAT 路径):

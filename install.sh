@@ -15,6 +15,7 @@
 #   bash install.sh                          # 全自动 (gh 登录则自动 fork, 否则问用户名)
 #   bash install.sh <github用户名>           # 指定用户名, clone github.com/<用户名>/hanflow
 #   bash install.sh --target <目录>          # 指定 clone 根目录 (默认 ~/hanflow-dev/)
+#   bash install.sh --branch <分支>          # 指定 hanflow-evolve 分支 (默认 main; 验证 feature 分支用)
 #   bash install.sh --check                  # 只做环境 + 仓库状态预检, 不安装
 #   bash install.sh --update-skills          # 只更新 skill (hanflow-evolve git pull + 重装)
 #   bash install.sh --uninstall              # 移除已安装的 skill
@@ -43,6 +44,7 @@ fail()  { printf "${RED}[FAIL]${NC} %s\n" "$*" >&2; }
 
 # ── 默认配置 ──
 HANFLOW_DEV_DIR="${HANFLOW_DEV_DIR:-$HOME/hanflow-dev}"
+EVOLVE_BRANCH="main"
 GITHUB_USER=""
 UPSTREAM_HANFLOW="xpc1024/hanflow"
 UPSTREAM_HANFLOW_SITE="xpc1024/hanflow-site"
@@ -76,6 +78,7 @@ ACTION="install"
 while [ $# -gt 0 ]; do
   case "$1" in
     --target)        HANFLOW_DEV_DIR="$2"; shift 2 ;;
+    --branch)        EVOLVE_BRANCH="$2"; shift 2 ;;
     --check)         ACTION="check" ; shift ;;
     --update-skills) ACTION="update_skills"; shift ;;
     --uninstall)     ACTION="uninstall"; shift ;;
@@ -104,6 +107,24 @@ clone_repo() {
   else
     fail "$name clone 失败 (URL: $url)"
     return 1
+  fi
+}
+
+# 用法: clone_repo_branch <url> <目标目录> <显示名> <分支>
+clone_repo_branch() {
+  local url="$1" dest="$2" name="$3" branch="$4"
+  if [ -d "$dest/.git" ]; then
+    ok "$name 已存在: $dest (跳过 clone)"
+    return 0
+  fi
+  if [ -d "$dest" ]; then
+    warn "$dest 存在但不是 git 仓库, 跳过"; return 1
+  fi
+  info "clone $name (branch=$branch) → $dest"
+  if git clone --branch "$branch" "$url" "$dest"; then
+    ok "$name clone 完成 ($branch)"; return 0
+  else
+    fail "$name clone 失败 (URL: $url, branch: $branch)"; return 1
   fi
 }
 
@@ -257,12 +278,18 @@ do_install() {
   mkdir -p "$HANFLOW_DEV_DIR"
 
   # 1. clone hanflow-evolve (skill 源)
-  info "[1/3] hanflow-evolve (skill 源)"
+  info "[1/3] hanflow-evolve (skill 源, branch=$EVOLVE_BRANCH)"
   local evolve_dest="$HANFLOW_DEV_DIR/hanflow-evolve"
-  clone_repo "https://github.com/$UPSTREAM_HANFLOW_EVOLVE" "$evolve_dest" "hanflow-evolve" || {
-    fail "hanflow-evolve clone 失败, skill 安装无法继续"
-    exit 1
-  }
+  if [ "$EVOLVE_BRANCH" = "main" ]; then
+    clone_repo "https://github.com/$UPSTREAM_HANFLOW_EVOLVE" "$evolve_dest" "hanflow-evolve" || {
+      fail "hanflow-evolve clone 失败, skill 安装无法继续"; exit 1
+    }
+  else
+    # 指定分支 (验证 feature 分支用)
+    clone_repo_branch "https://github.com/$UPSTREAM_HANFLOW_EVOLVE" "$evolve_dest" "hanflow-evolve" "$EVOLVE_BRANCH" || {
+      fail "hanflow-evolve clone ($EVOLVE_BRANCH) 失败"; exit 1
+    }
+  fi
 
   # 2. 装 skill (从 clone 下来的 evolve 仓库)
   info "[2/3] 安装 skill (contribute-pr + loop-evolve)"
@@ -274,6 +301,17 @@ do_install() {
     fi
     install_skill "$src" "$SKILLS_DIR/$skill" "$skill"
   done
+
+  # 2b. 装 charter-check (contribute-pr S0 依赖, 来自 hanflow-evolve/scripts/)
+  local cc_src="$evolve_dest/scripts/charter-check"
+  local cc_dest="$SKILLS_DIR/contribute-pr/scripts/charter-check"
+  if [ -d "$cc_src" ]; then
+    rm -rf "$cc_dest"
+    cp -r "$cc_src" "$cc_dest"
+    ok "charter-check: 复制到 $cc_dest"
+  else
+    warn "charter-check 源不存在: $cc_src (S0 charter 复核将不可用)"
+  fi
 
   # 3. fork + clone hanflow
   info "[3/3] hanflow (你的 fork, 工作目录)"
@@ -317,6 +355,13 @@ do_update_skills() {
   for skill in contribute-pr loop-evolve; do
     install_skill "$evolve_dest/skills/$skill" "$SKILLS_DIR/$skill" "$skill"
   done
+  # 同步 charter-check
+  local cc_src="$evolve_dest/scripts/charter-check"
+  local cc_dest="$SKILLS_DIR/contribute-pr/scripts/charter-check"
+  if [ -d "$cc_src" ]; then
+    rm -rf "$cc_dest"; cp -r "$cc_src" "$cc_dest"
+    ok "charter-check: 已更新"
+  fi
   ok "skill 更新完成"
 }
 

@@ -26,8 +26,8 @@ description: 面向无写权限的社区成员,复用 Hanflow 自进化体系(lo
    本 skill 委托复用 loop-evolve 的 references,必须先确认其存在:
 
    ```
-   期望路径(仓库内,与 contribute-pr 同源):
-     <hanflow-evolve>/skills/loop-evolve/references/*.md
+   期望路径(install.sh 装到 ~/.zcode/skills/):
+     ~/.zcode/skills/loop-evolve/references/*.md
    ```
 
    若不可达,报错并提示贡献者:
@@ -47,23 +47,38 @@ description: 面向无写权限的社区成员,复用 Hanflow 自进化体系(lo
 2. **打印安全声明(第二件事,在任何输入请求之前)**:见下方"凭证安全声明"小节,
    或完整版见 `references/credential-handling.md`。
 
-3. **定位 evolve 家目录**:`E:\opensource\hanflow-evolve`(或 `$HANFLOW_EVOLVE_DIR`)。
-   读 `state-contribute.yaml`(注意:**不是** loop-evolve 的 `state.yaml`,字段同构但文件独立):
+3. **定位工作目录**:贡献者 clone 的 hanflow 仓库(如 `~/hanflow-dev/hanflow`)。
+   本 skill 以该仓库为工作中心,state/锁/CONTRIBUTIONS 都放其 `.contribute/` 子目录:
 
-   - 无 state-contribute.yaml 或 `phase == "uninitialized"` → 从 scan 开始新贡献
-   - `phase` 是普通阶段(scan/prioritize/check_occupied/human_topic/plan/audit_direction/
-     design/audit_design/plan_exec/code/verify/submit)且无 `last_error` → 继续该阶段
+   ```
+   <hanflow_repo>/.contribute/
+   ├── state.yaml          # 本 skill 唯一状态(字段同构 loop-evolve, 文件独立)
+   ├── CONTRIBUTIONS.md    # 贡献档案(本机本地)
+   ├── lock                # 并发锁
+   └── adr/                # charter-check 白名单(空, 贡献者无 ADR)
+   ```
+
+   **重要**:首次贡献时,若 `<hanflow_repo>/.contribute/` 不存在,自动创建。
+   并提示贡献者把 `.contribute/` 加入 hanflow 仓库的 `.gitignore`(避免提交本地状态):
+
+   ```
+   echo ".contribute/" >> <hanflow_repo>/.gitignore
+   ```
+
+4. **读 `.contribute/state.yaml`**:
+   - 无 state.yaml 或 `phase == "uninitialized"` → 从 scan 开始新贡献
+   - `phase` 是普通阶段(scan/prioritize/check_occupied/.../verify/submit)且无 `last_error` → 继续
    - `phase` 是 `gateN` 且 `gate_status == "awaiting_user"` → 提示 Gate 确认
    - `phase == "submitted"` → 上次贡献已完成,询问是否开始新贡献
    - `last_error` 非空 → 报告错误,按 spec §8.1 恢复决策树询问如何继续
 
-4. **刷新本机档案(可选,触发点 2)**:若 CONTRIBUTIONS.md 存在且有 status=open 记录,
-   启动时调 `scripts/refresh-status.sh` 刷新(spec §5.4)。失败不阻断(离线可继续)。
+5. **刷新本机档案(可选,触发点 2)**:若 CONTRIBUTIONS.md 有 status=open 记录,
+   启动时调 `scripts/refresh-status.sh <hanflow_repo>` 刷新。失败不阻断(离线可继续)。
 
-5. **获取并发锁**:`source scripts/acquire-lock.sh $EVOLVE_HOME`
-   锁文件 `.loop-contribute.lock`(与 loop-evolve 的 `.loop.lock` **独立**,可并行)。
+6. **获取并发锁**:`source scripts/acquire-lock.sh <hanflow_repo>`
+   锁文件 `<hanflow_repo>/.contribute/lock`(与 loop-evolve 完全独立,可并行)。
 
-6. **进入对应阶段**,按阶段路由执行。
+7. **进入对应阶段**,按阶段路由执行。
 
 ## 字段同构(委托跑通的前提,关键约束)
 
@@ -84,15 +99,16 @@ contribute-pr 的 `state-contribute.yaml` **字段名与 loop-evolve 的 state.y
 前 13 阶段(scan 到 gate3)**不复制** loop-evolve 的 reference 内容,而是委托执行。
 **委托时的上下文注入**(每个委托阶段执行前,必须告知执行者):
 
-- state 文件:`hanflow-evolve/state-contribute.yaml`(不是 `state.yaml`)
-- 锁文件:`.loop-contribute.lock`(不是 `.loop.lock`)
-- 产物目录:`contributions/<cycle_id>/`(不是 `cycles/<cycle_id>/`)
-- `write-state.sh` 调用:第一个参数传 `state-contribute.yaml` 路径
-- `acquire-lock.sh`:用本 skill 自带版本(独立锁名)
+- 工作目录:贡献者 clone 的 hanflow 仓库(`$HANFLOW_REPO`)
+- state 文件:`$HANFLOW_REPO/.contribute/state.yaml`(不是 loop-evolve 的 state.yaml)
+- 锁文件:`$HANFLOW_REPO/.contribute/lock`(不是 loop-evolve 的 .loop.lock)
+- 产物目录:`$HANFLOW_REPO/.contribute/contributions/<cycle_id>/`(不是 cycles/)
+- `write-state.sh` 调用:第一个参数传 `$HANFLOW_REPO/.contribute/state.yaml`
+- `acquire-lock.sh`:用本 skill 自带版本(独立锁路径)
 
-委托路径(仓库内相对引用,可靠):
+委托路径(install.sh 装到 skill 目录,可靠):
 ```
-skills/loop-evolve/references/<phase>.md
+~/.zcode/skills/loop-evolve/references/<phase>.md
 ```
 
 ## 阶段路由
@@ -129,24 +145,24 @@ skills/loop-evolve/references/<phase>.md
 
 ## 子命令执行路径
 
-非默认流程的子命令,直接调脚本,不进阶段循环:
+非默认流程的子命令,直接调脚本,不进阶段循环(`<hanflow_repo>` 是贡献者 clone 的 hanflow 仓库):
 
 | 子命令 | 执行路径 |
 |--------|---------|
-| `/contribute-pr status` | 读 state-contribute.yaml 打印;读 CONTRIBUTIONS.md 打印本机 open 记录摘要 |
-| `/contribute-pr refresh` | `bash scripts/refresh-status.sh $EVOLVE_HOME`(spec §5.4 触发点 3) |
+| `/contribute-pr status` | 读 `.contribute/state.yaml` 打印;读 `.contribute/CONTRIBUTIONS.md` 打印本机 open 记录摘要 |
+| `/contribute-pr refresh` | `bash scripts/refresh-status.sh <hanflow_repo>`(spec §5.4 触发点 3) |
 | `/contribute-pr gate approve\|revise\|reject` | 委托 loop-evolve gate 行为,写 gate_status 后推进/回退 |
-| `/contribute-pr abort` | 抹 token(`git remote set-url contribute-fork <clean_url>`)+ 删 `.loop-contribute.lock` + state 标 aborted |
+| `/contribute-pr abort` | 抹 token(`git remote set-url contribute-fork <clean_url>`)+ 删 `.contribute/lock` + state 标 aborted |
 
 ## 阶段循环内的脚本调用
 
 | phase | 脚本 |
 |-------|------|
-| check_occupied(2.5) | `bash scripts/check-occupied.sh $EVOLVE_HOME`(Level 1,P1) |
-| submit.S0 | `bash scripts/pr-readiness-check.sh $EVOLVE_HOME` |
-| submit.S2 | `bash scripts/submit.sh $EVOLVE_HOME hanflow` |
-| submit.S3(P2) | `bash scripts/submit.sh $EVOLVE_HOME hanflow-site` |
-| submit.S4 | `bash scripts/write-contribution.sh $EVOLVE_HOME` + `bash scripts/refresh-status.sh $EVOLVE_HOME` |
+| check_occupied(2.5) | `bash scripts/check-occupied.sh <hanflow_repo>`(Level 1,P1) |
+| submit.S0 | `bash scripts/pr-readiness-check.sh <hanflow_repo>` |
+| submit.S2 | `bash scripts/submit.sh <hanflow_repo> hanflow` |
+| submit.S3(P2) | `bash scripts/submit.sh <hanflow_repo> hanflow-site` |
+| submit.S4 | `bash scripts/write-contribution.sh <hanflow_repo>` + `bash scripts/refresh-status.sh <hanflow_repo>` |
 
 ## 凭证安全声明(启动时必须先打印,在请求任何输入之前)
 
