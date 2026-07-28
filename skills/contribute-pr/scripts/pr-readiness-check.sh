@@ -59,6 +59,9 @@ if [ ! -d "$CHARTER_CHECK_DIR" ]; then
   echo "WARN: charter-check 未打包到 $CHARTER_CHECK_DIR, 跳过 (重跑 install.sh 修复)" >&2
   echo "PASS [1/3] charter-check (skipped, not installed)"
 else
+  # 注意: charter-check 各子检查在 --full 模式 (扫全仓 ~110 文件) 下会挂起
+  # (in_whitelist 循环 + glob 组合)。S0 用 --diff (只扫改动文件), 正常几秒完成。
+  # 但贡献者改动巨大时 --diff 也可能变慢, 加 timeout 120 防止极端情况卡死。
   CHARTER_OK=1
   for check in errors registry pydantic-data async-api layering; do
     check_script="$CHARTER_CHECK_DIR/${check}.sh"
@@ -66,16 +69,21 @@ else
       echo "  WARN: $check.sh 不存在, 跳过" >&2
       continue
     fi
-    if bash "$check_script" "$HANFLOW_REPO" "diff" "$ADR_DIR" 2>&1 | sed 's/^/    /'; then
+    # timeout 124=超时 (视为该项失败但不阻塞整体, 避免 skill 挂死)
+    if timeout 120 bash "$check_script" "$HANFLOW_REPO" "diff" "$ADR_DIR" 2>&1 | sed 's/^/    /'; then
       : # 该项通过
     else
+      rc=$?
+      if [ "$rc" -eq 124 ]; then
+        echo "    WARN: $check 超时 (>120s), 视为该项失败 (改动可能过大, 考虑拆分 PR)" >&2
+      fi
       CHARTER_OK=0
     fi
   done
   if [ "$CHARTER_OK" -eq 1 ]; then
     echo "PASS [1/3] charter-check 全部通过"
   else
-    echo "FAIL [1/3] charter-check 有违规 (见上方输出)" >&2
+    echo "FAIL [1/3] charter-check 有违规或超时 (见上方输出)" >&2
     FAIL_COUNT=$((FAIL_COUNT + 1))
   fi
 fi
