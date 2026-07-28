@@ -103,9 +103,9 @@ fi
 # ── 检查 3: 提交历史合规 ──
 echo "--- [3/3] 提交历史合规 (conventional commits) ---"
 MAIN_BRANCH="main"
-# 找 base 分支 (上游 main 或 fork 的 master)
+# 找 base 分支 (上游 main 或 fork 的 main)
 BASE_BRANCH=""
-for cand in upstream/main origin/main origin/master main master; do
+for cand in upstream/main origin/main main; do
   if git -C "$HANFLOW_REPO" rev-parse --verify --quiet "refs/heads/$cand" >/dev/null 2>/dev/null || \
      git -C "$HANFLOW_REPO" rev-parse --verify --quiet "refs/remotes/$cand" >/dev/null 2>/dev/null; then
     BASE_BRANCH="$cand"
@@ -114,7 +114,7 @@ for cand in upstream/main origin/main origin/master main master; do
 done
 
 if [ -z "$BASE_BRANCH" ]; then
-  echo "WARN: 未找到 base 分支 (main/master), 跳过提交历史检查" >&2
+  echo "WARN: 未找到 base 分支 (main), 跳过提交历史检查" >&2
   echo "PASS [3/3] commit-history (skipped, no base)"
 else
   # 规范化分支名 (refs/remotes/origin/main → 用 git log 直接比较)

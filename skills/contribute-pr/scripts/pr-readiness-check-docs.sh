@@ -54,7 +54,7 @@ fi
 # ── 检查 2: 提交历史合规 ──
 echo "--- [2/2] 提交历史合规 (conventional commits) ---"
 BASE_BRANCH=""
-for cand in upstream/main origin/main origin/master main master; do
+for cand in upstream/main origin/main main; do
   if git -C "$HANFLOW_HOME_REPO" rev-parse --verify --quiet "refs/heads/$cand" >/dev/null 2>/dev/null || \
      git -C "$HANFLOW_HOME_REPO" rev-parse --verify --quiet "refs/remotes/$cand" >/dev/null 2>/dev/null; then
     BASE_BRANCH="$cand"; break

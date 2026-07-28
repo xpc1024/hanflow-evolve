@@ -51,12 +51,15 @@ list_py_files() {
       find "$hanflow_path/hanflow" -name '*.py' -not -path '*/__pycache__/*' 2>/dev/null || true
       ;;
     diff)
-      # cycle 改动的 .py：对比 cycle base（master）到 HEAD（含已 commit 的 P6 改动）。
-      # LOOP P6 是 commit-per-task，P7 跑 --diff 时改动已提交，故对比 master..HEAD 而非工作树。
-      # 若 master 不存在（如独立 worktree），回退到 HEAD（未提交 + 已暂存）。
-      local base_ref="master"
+      # cycle 改动的 .py：对比 cycle base（默认分支）到 HEAD（含已 commit 的 P6 改动）。
+      # LOOP P6 是 commit-per-task，P7 跑 --diff 时改动已提交，故对比 base..HEAD 而非工作树。
+      # base 优先 main (2026-07 后统一), 回退 master (历史), 都不存在回退 HEAD (worktree)。
+      local base_ref="main"
       if ! git -C "$hanflow_path" rev-parse --verify "$base_ref" >/dev/null 2>&1; then
-        base_ref="HEAD"
+        base_ref="master"
+        if ! git -C "$hanflow_path" rev-parse --verify "$base_ref" >/dev/null 2>&1; then
+          base_ref="HEAD"
+        fi
       fi
       git -C "$hanflow_path" diff --name-only --relative "$base_ref"..HEAD 2>/dev/null \
         | grep -E '^hanflow/.*\.py$' | sed "s|^|$hanflow_path/|" || true
