@@ -50,7 +50,7 @@
 - **github-sync.sh 适配 main**：现在用 main，脚本硬编码 main 反而对了，但 master→main 迁移需清理远程 master 分支。
 - **version-bump.sh 路径 bug**：`api/__init__.py` → `hanflow/api/__init__.py`，待修。
 - **GLM SDK 流式 async**：本 cycle 按 async 写 + mock 通过，真实 GLM SDK 行为待生产确认。
-- **官网同步**：LLM streaming 是新特性，hanflow-site 文档需补 streaming 章节（本 cycle 跳过，标待办）。
+- **官网同步**：LLM streaming 是新特性，hanflow-home 文档需补 streaming 章节（本 cycle 跳过，标待办）。
 
 ## 下一 cycle 候选
 

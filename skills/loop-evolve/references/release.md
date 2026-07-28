@@ -26,7 +26,7 @@
 
 ### Step 1: 版本目录创建
 ```bash
-cd E:/opensource/hanflow-site
+cd E:/opensource/hanflow-home
 mkdir -p content/<target_version>/en content/<target_version>/zh
 # 从上一版本复制全部 MDX 作为基线 (若已有则跳过)
 ```
@@ -62,7 +62,7 @@ mkdir -p content/<target_version>/en content/<target_version>/zh
 
 ### Step 6: 构建验证
 ```bash
-cd E:/opensource/hanflow-site
+cd E:/opensource/hanflow-home
 npm test          # versions + docs 测试
 npm run build     # 静态站点构建 (Vercel 会跑这个)
 ```

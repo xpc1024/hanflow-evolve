@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# site-sync.sh — RELEASE Phase C: 同步 hanflow-site 到最新 hanflow 版本 (spec §5.5)
+# site-sync.sh — RELEASE Phase C: 同步 hanflow-home 到最新 hanflow 版本 (spec §5.5)
 #
 # 用法: site-sync.sh <evolve_home>
 #
@@ -7,7 +7,7 @@
 #   **hanflow 版本号变化即同步**。本脚本无条件触发, 内部幂等。
 #
 # 行为:
-#   1. 从 config.yaml paths.hanflow_site 读 site 仓库路径
+#   1. 从 config.yaml paths.hanflow_home 读 site 仓库路径
 #   2. 从 state.yaml current_version 读 LATEST (权威源)
 #   3. 校验: site 仓库存在; main 分支干净 (允许 content/<version>/ untracked); remote 已配
 #   4. 若 content/<LATEST>/ 已存在 且 lib/versions.ts LATEST 已对 → 视为已同步, 退出 0
@@ -46,14 +46,14 @@ import os, yaml
 c = yaml.safe_load(open(os.environ['CONFIG_FILE'], encoding='utf-8'))
 s = yaml.safe_load(open(os.environ['STATE_FILE'], encoding='utf-8'))
 paths = c.get('paths') or {}
-print(paths.get('hanflow_site') or '')
+print(paths.get('hanflow_home') or '')
 print(s.get('current_version') or '')
 ")
 SITE_PATH=$(printf '%s' "$READ_OUT" | sed -n '1p')
 LATEST=$(printf '%s' "$READ_OUT" | sed -n '2p')
 
 if [ -z "$SITE_PATH" ]; then
-  echo "ERROR: config.yaml paths.hanflow_site is empty" >&2
+  echo "ERROR: config.yaml paths.hanflow_home is empty" >&2
   exit 1
 fi
 if [ -z "$LATEST" ]; then
@@ -61,7 +61,7 @@ if [ -z "$LATEST" ]; then
   exit 1
 fi
 if [ ! -d "$SITE_PATH" ]; then
-  echo "ERROR: hanflow-site path not found: $SITE_PATH" >&2
+  echo "ERROR: hanflow-home path not found: $SITE_PATH" >&2
   exit 1
 fi
 

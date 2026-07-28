@@ -152,7 +152,7 @@
 
 3. **[中] mypy 环境修复**:Python 3.13 + numpy stub 阻塞,要么 pin mypy + Python 3.12,要么用 standalone mypy container。
 
-4. **[中] site_sync 触发**:本周期 site_sync_needed=true(site 是 feature 变化),但 release 阶段未实际触发 hanflow-site 重建。下次需要把 hanflow-site 同步跑一遍(v1.1.0 + v1.2.0 都未同步)。
+4. **[中] site_sync 触发**:本周期 site_sync_needed=true(site 是 feature 变化),但 release 阶段未实际触发 hanflow-home 重建。下次需要把 hanflow-home 同步跑一遍(v1.1.0 + v1.2.0 都未同步)。
 
 5. **[中] DOCKER sandbox 的镜像构建流水线**:本 cycle 用预构建 python:3.11-slim,但用户实际需要带 hanflow runtime 的定制镜像(含 SDK/依赖)。下个 cycle 可以做。
 

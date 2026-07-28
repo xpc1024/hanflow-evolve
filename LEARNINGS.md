@@ -152,7 +152,7 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 
 - **3 个硬门 (hard gates)**: direction / design / execute 后各设审计门, 不过不进下一阶段。
 - **[2026-07-21 修订] 官网版本联动规则**: 取代原 "仅特性变化同步"(spec §5.5)。
-  **新规则: hanflow 任何版本号变化(patch/minor/major), hanflow-site 必须同步**,
+  **新规则: hanflow 任何版本号变化(patch/minor/major), hanflow-home 必须同步**,
   由 `scripts/site-sync.sh` 自动执行(github-sync.sh Phase C 无条件调用, 内部幂等):
   - cp `content/<prev>/` → `content/<LATEST>/`(placeholder 内容,实际 mdx 重写是独立 cycle)
   - 改 `lib/versions.ts`(VERSIONS 数组 + LATEST_VERSION)
@@ -205,7 +205,7 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
    - `version-bump.sh` 路径 bug(api/__init__.py 实际在 hanflow/api/__init__.py,2 个 cycle 都手动绕过)
    - `score-signals.py` Windows 路径 bug(LEARNINGS #6,2 个 cycle 都复现)
    - smoke-test.sh 更全面自检
-3. **[高] site_sync 触发**:本周期 site_sync_needed=true(docker-sandbox 是 feature),但 release 阶段未实际触发 hanflow-site 重建。v1.1.0 + v1.2.0 都未同步,需要把 hanflow-site 同步跑一遍。
+3. **[高] site_sync 触发**:本周期 site_sync_needed=true(docker-sandbox 是 feature),但 release 阶段未实际触发 hanflow-home 重建。v1.1.0 + v1.2.0 都未同步,需要把 hanflow-home 同步跑一遍。
 4. **[中] mypy 环境修复**:Python 3.13 + numpy stub 阻塞,考虑 pin mypy + Python 3.12 container。
 5. **[中] DOCKER sandbox 的镜像构建流水线**:本 cycle 用预构建 `python:3.11-slim`,但用户需要带 hanflow runtime 的定制镜像(含 SDK/依赖)。下个 cycle 可以做。
 6. **[中] K8S sandbox 落地 (Phase 10)**:本 cycle 只占位 NotImplementedError。

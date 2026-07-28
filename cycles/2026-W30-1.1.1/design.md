@@ -805,7 +805,7 @@ tests/
 
 ## 前端影响
 
-**无前端改动**。本 cycle 只动 SDK + core + isolation + tools,API/CLI 暴露 sandbox 配置明确排除(非目标 #6)。`web/` 与 `hanflow-site/` 不受影响。
+**无前端改动**。本 cycle 只动 SDK + core + isolation + tools,API/CLI 暴露 sandbox 配置明确排除(非目标 #6)。`web/` 与 `hanflow-home/` 不受影响。
 
 **CLI/API 影响证据(审计 round 1 采纳)**:经源码 grep 核实,`hanflow/cli/` 与 `hanflow/api/` 当前**不 import `SandboxMode` 或 `RunSandbox`**(生产路径只有 `sdk.py:130-134` 用 `RunSandbox.create`),本 cycle 对 CLI/API 无破坏。CLI/API 暴露 sandbox 配置是下个 cycle 的主题(非目标 #6)。
 

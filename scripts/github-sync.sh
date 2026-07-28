@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# github-sync.sh — RELEASE 阶段: hanflow + evolve + hanflow-site 三仓库同步 (spec §5.4-5.5)
+# github-sync.sh — RELEASE 阶段: hanflow + evolve + hanflow-home 三仓库同步 (spec §5.4-5.5)
 #
 # 用法: github-sync.sh <evolve_home>
 #
 # 三个 Phase:
 #   Phase A: hanflow 仓库 — merge feature→main (no-ff) + tag + push
 #   Phase B: hanflow-evolve 仓库 — commit cycle 产物 + push (本仓库自身)
-#   Phase C: hanflow-site 仓库 — 调用 site-sync.sh 同步版本切换器 + push
+#   Phase C: hanflow-home 仓库 — 调用 site-sync.sh 同步版本切换器 + push
 #
 # Phase A 行为:
 #   1. 从 config.yaml 读 hanflow 路径 + merge_strategy
@@ -22,7 +22,7 @@
 #   - push 到 evolve 的所有 remote
 #
 # Phase C 行为 (cycle 2026-W30-1.1.1 起集成进本脚本):
-#   - 调 scripts/site-sync.sh 同步 hanflow-site (无条件触发, 内部幂等)
+#   - 调 scripts/site-sync.sh 同步 hanflow-home (无条件触发, 内部幂等)
 #   - 用户偏好: hanflow 版本号变化即同步 (取代原 §5.5 "仅 feat/BREAKING" 规则)
 #
 # Windows/MSYS 兼容: 路径经环境变量传给 python, 不插值进 python -c 字符串。
@@ -187,12 +187,12 @@ if [ -n "$EVOLVE_REMOTES" ]; then
 fi
 
 # ============================================================================
-# Phase C: hanflow-site 同步 (cycle 2026-W30-1.1.1 起集成)
+# Phase C: hanflow-home 同步 (cycle 2026-W30-1.1.1 起集成)
 # ============================================================================
 # 用户偏好 (2026-07-21): hanflow 版本号变化即同步 site, 无条件触发。
 # site-sync.sh 内部幂等: 已同步时 exit 0 no-op。
 
-echo "--- Phase C: hanflow-site sync ---"
+echo "--- Phase C: hanflow-home sync ---"
 if [ -f "$EVOLVE_HOME/scripts/site-sync.sh" ]; then
   bash "$EVOLVE_HOME/scripts/site-sync.sh" "$EVOLVE_HOME" || {
     echo "WARN: Phase C site-sync.sh failed (release of hanflow itself is unaffected)" >&2

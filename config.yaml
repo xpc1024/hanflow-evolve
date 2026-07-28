@@ -3,7 +3,7 @@
 
 paths:
   hanflow: "E:/opensource/hanflow"
-  hanflow_site: "E:/opensource/hanflow-site"
+  hanflow_home: "E:/opensource/hanflow-home"
   evolve_home: "E:/opensource/hanflow-evolve"
 
 versioning:
@@ -16,7 +16,7 @@ versioning:
 signals:
   github:
     enabled: true
-    repo: "xpc1024/hanflow-site"
+    repo: "xpc1024/hanflow-home"
     fetch_prs: true
   source_stubs:
     enabled: true
