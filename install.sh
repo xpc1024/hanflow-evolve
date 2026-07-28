@@ -178,6 +178,104 @@ check_env() {
   return $issues
 }
 
+# ── 确保 gh 已安装且已登录 (装 + 登录, 自动化到最小用户操作) ──
+# 理念: gh 是 submit 硬依赖, 不该让用户自己装。装能全自动, 登录走 gh auth --web
+#       (浏览器 OAuth, 用户只需网页点 Authorize)。
+ensure_gh() {
+  # 1. 检测是否已装 (command -v 找不到时, 再查 Windows 标准位置 — 可能已装但不在 PATH)
+  if ! command -v gh >/dev/null 2>&1; then
+    # Windows 标准 winget/choco 安装路径
+    for cand in "/c/Program Files/GitHub CLI/gh.exe" "/c/Program Files (x86)/GitHub CLI/gh.exe"; do
+      if [ -f "$cand" ]; then
+        info "发现 gh 在 $cand 但不在 PATH, 自动加入 PATH..."
+        export PATH="$PATH:$(dirname "$cand")"
+        break
+      fi
+    done
+  fi
+
+  if ! command -v gh >/dev/null 2>&1; then
+    info "gh 未安装, 自动安装..."
+    case "$PLATFORM" in
+      windows)
+        if command -v winget >/dev/null 2>&1; then
+          # winget 对"已装"返回非零, 不能只看退出码, 装后再检测 gh.exe
+          winget install --id GitHub.cli -e --accept-source-agreements --accept-package-agreements 2>&1 | sed 's/^/    /' || true
+          # 装后扫标准位置补 PATH
+          for cand in "/c/Program Files/GitHub CLI/gh.exe" "/c/Program Files (x86)/GitHub CLI/gh.exe"; do
+            [ -f "$cand" ] && export PATH="$PATH:$(dirname "$cand")" && break
+          done
+          command -v gh >/dev/null 2>&1 && ok "gh 安装完成 (winget)" || { warn "winget 装 gh 后仍找不到 gh, 请手动装: https://cli.github.com/"; return 1; }
+        elif command -v choco >/dev/null 2>&1; then
+          choco install gh -y 2>&1 | sed 's/^/    /' || true
+          command -v gh >/dev/null 2>&1 && ok "gh 安装完成 (choco)" || { warn "choco 安装 gh 失败"; return 1; }
+        else
+          warn "无 winget/choco, 请手动装 gh: https://cli.github.com/"
+          return 1
+        fi
+        ;;
+      macos)
+        if command -v brew >/dev/null 2>&1; then
+          brew install gh 2>&1 | sed 's/^/    /' || true
+          command -v gh >/dev/null 2>&1 && ok "gh 安装完成 (brew)" || { warn "brew 安装失败"; return 1; }
+        else
+          warn "无 Homebrew, 请手动装 gh: https://cli.github.com/"
+          return 1
+        fi
+        ;;
+      linux)
+        if command -v apt-get >/dev/null 2>&1; then
+          info "apt 安装 (需要 sudo, 可能提示密码)..."
+          sudo apt-get update -qq && sudo apt-get install -y gh 2>&1 | sed 's/^/    /' || true
+          command -v gh >/dev/null 2>&1 && ok "gh 安装完成 (apt)" || { warn "apt 安装失败, 参考 https://github.com/cli/cli/blob/trunk/docs/install_linux.md"; return 1; }
+        elif command -v dnf >/dev/null 2>&1; then
+          sudo dnf install -y gh 2>&1 | sed 's/^/    /' || true
+          command -v gh >/dev/null 2>&1 && ok "gh 安装完成 (dnf)" || { warn "dnf 安装失败"; return 1; }
+        else
+          warn "未识别的 Linux 发行版, 参考 https://github.com/cli/cli/blob/trunk/docs/install_linux.md"
+          return 1
+        fi
+        ;;
+      *)
+        warn "未知平台 $PLATFORM, 请手动装 gh: https://cli.github.com/"
+        return 1
+        ;;
+    esac
+  else
+    ok "gh 已安装: $(gh --version 2>&1 | head -1)"
+  fi
+
+  # 2. 检测是否已登录, 未登录则引导 gh auth --web
+  if gh auth status >/dev/null 2>&1; then
+    GH_USER=$(gh api user --jq '.login' 2>/dev/null || echo "")
+    [ -n "$GH_USER" ] && ok "gh 已登录: @$GH_USER" || ok "gh 已登录"
+    return 0
+  fi
+
+  info "gh 未登录, 引导浏览器登录 (gh auth login --web)..."
+  echo "  ┌─────────────────────────────────────────────────────────────┐"
+  echo "  │ ℹ️  gh auth login 将用浏览器登录 GitHub。                 │"
+  echo "  │    凭证由 gh 安全存储在本机 (系统 credential store),      │"
+  echo "  │    Hanflow 不接触你的凭证。随时可 gh auth logout 撤销。   │"
+  echo "  └─────────────────────────────────────────────────────────────┘"
+  echo ""
+  printf "${BLUE}[?]${NC} 按 Enter 开始浏览器登录 (Ctrl+C 跳过, 后续 submit 会要 PAT): "
+  read -r ans
+  if [ -n "$ans" ]; then
+    warn "跳过 gh 登录 (后续 submit 需手动建 PAT, 见 credential-handling.md)"
+    return 0
+  fi
+
+  # gh auth login --web: 会显示 one-time code, 开浏览器, 用户网页授权
+  if gh auth login --hostname github.com --git-protocol https --web 2>&1 | sed 's/^/    /'; then
+    GH_USER=$(gh api user --jq '.login' 2>/dev/null || echo "")
+    [ -n "$GH_USER" ] && ok "gh 登录成功: @$GH_USER" || ok "gh 登录成功"
+  else
+    warn "gh auth login 未完成 (可稍后手动 gh auth login)。后续 submit 需 PAT。"
+    return 0  # 不算失败, PAT 仍可用
+  fi
+}
+
 # ── 获取贡献者 GitHub 用户名 (自动优先, 兜底交互) ──
 resolve_github_user() {
   # 优先级: 命令行参数 > gh 登录用户 > 交互询问
@@ -273,6 +371,11 @@ do_install() {
   echo ""
 
   check_env || true
+  echo ""
+
+  # 确保 gh 装好且登录 (submit 硬依赖; 装能自动, 登录半自动浏览器授权)
+  info "确保 GitHub CLI (gh) 就绪..."
+  ensure_gh || warn "gh 未就绪 (submit 前必须解决, 见上方提示)"
   echo ""
 
   mkdir -p "$HANFLOW_DEV_DIR"

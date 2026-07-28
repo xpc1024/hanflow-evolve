@@ -30,56 +30,59 @@ contribute-pr 最敏感的部分。本文档含安全声明、两条凭证路径
 
 ---
 
-## 2. 两条凭证路径(互斥,贡献者选一)
+## 2. 两条凭证路径(默认 gh auth,PAT 作 fallback)
 
-### 路径 A:默认 PAT 路径(零持久化,推荐)
+> **设计变更说明**:早期 spec 把 PAT(零持久化)定为默认、gh auth 为替代。实测后翻转:
+> gh auth 由 install.sh 自动引导(`gh auth login --web`,用户网页点一下即可),体验远优于
+> 让用户手动建 fine-grained PAT(7 步且易选错权限)。安全性上 gh credential store 由 GitHub
+> 官方管理(macOS Keychain / Windows Credential Manager),比 PAT 字符串传递更安全。
+> 故 **gh auth 升为默认,PAT 降为 fallback**(无浏览器环境或贡献者主动选择时用)。
 
-贡献者创建 fine-grained PAT(权限见安全声明),skill 用 token 构造**临时 push remote URL**:
+### 路径 A:`gh auth login`(默认,推荐)
 
-```bash
-# 临时 remote URL 带 token (仅本会话, 不写持久配置)
-FORK_URL="https://<token>@github.com/<user>/hanflow.git"
-git -C <hanflow_path> remote add contribute-fork "$FORK_URL"
-# push 完成后抹除 token (见 §4)
-git -C <hanflow_path> remote set-url contribute-fork "https://github.com/<user>/hanflow.git"
+由 install.sh 的 `ensure_gh` 自动引导:
+
+```
+install.sh 检测 gh
+├─ 已装且已登录 → 跳过
+├─ 已装未登录 → 引导 gh auth login --web (浏览器 OAuth, 用户网页点 Authorize)
+└─ 未装 → 自动装 (winget/brew/apt) → 引导登录
 ```
 
-**技术保证**:
-1. token 只在临时 remote URL 里,**绝不**写入 `~/.git-credentials`、`.git/config` 持久字段、
-   或任何全局配置
+凭证由 gh 存入系统 credential store(**持久**,但由 gh 官方管理,有 `gh auth logout` 一键撤销)。
+install.sh 引导前明确告知:
+```
+ℹ️  gh auth login 将用浏览器登录 GitHub。
+    凭证由 gh 安全存储在本机 (系统 credential store)。
+    Hanflow 不接触你的凭证。随时可 gh auth logout 撤销。
+```
+
+**这是默认路径**——submit.sh 优先用 gh 已登录的凭证发 PR,无需贡献者再处理 token。
+
+### 路径 B:PAT(fallback,无浏览器环境或主动选择)
+
+无浏览器(服务器)或贡献者不愿用 gh auth 时,用 fine-grained PAT。skill 用 token 构造
+**临时 push remote URL**:
+
+```bash
+FORK_URL="https://<token>@github.com/<user>/hanflow.git"
+git -C <hanflow_repo> remote add contribute-fork "$FORK_URL"
+# push 完成后抹除 token (见 §4)
+git -C <hanflow_repo> remote set-url contribute-fork "https://github.com/<user>/hanflow.git"
+```
+
+**技术保证(零持久化)**:
+1. token 只在临时 remote URL 里,**绝不**写入 `~/.git-credentials`、`.git/config` 持久字段
 2. push 完成后立即 `git remote set-url` 抹除
 3. 脚本用 `trap ... EXIT INT TERM` 保证 Ctrl+C 也抹除
 4. CONTRIBUTIONS.md 只记 PR URL,**绝不**记 token
 
-**这是 skill 的默认安全路径**——安全声明针对此路径承诺"零持久化"。
-
-### 路径 B:`gh auth login` 替代路径(贡献者主动选择)
-
-部分贡献者更愿意用 `gh auth login` 走浏览器 OAuth(完全不给 skill 任何 token 字符串)。
-
-**这条路径下 token 由 gh 存入其 credential store**(macOS Keychain / Windows Credential
-Manager / `~/.config/gh/hosts.yml`),**这是持久的**。与路径 A 的"零持久化"不同。
-
-**协调方式**(避免与路径 A 的安全承诺冲突):
-
-- skill **不主动推荐** gh auth login(避免与默认路径的安全承诺冲突)
-- 仅在贡献者询问或 PAT 不可用时作为替代方案告知
-- 贡献者明确选择此方式时,skill **追加打印一行**:
-
-  ```
-  ℹ️  你选择 gh auth login,凭证将由 gh 存入本机 credential store(持久)。
-      Hanflow 不接触该凭证。如不希望持久化,改用 PAT 路径(默认)。
-  ```
-
-- 把持久化的**知情权交给贡献者**,不假装两条路径安全级别一致
-
 ### 路径选择流程
 
 ```
-检测 gh auth status
-├─ 已登录 → 询问贡献者:"检测到 gh 已登录,沿用(凭证由 gh 持久存储,路径 B)
-│            还是改用 PAT(路径 A,零持久化)?[默认 A]"
-└─ 未登录 → 默认走路径 A(PAT),按 §3 引导 PAT 输入 + fork
+submit.S1 检测 gh auth status
+├─ 已登录 → 路径 A (gh auth), contribute-fork remote 用 https URL, gh 自动认证
+└─ 未登录 → 路径 B (PAT), 按 §3 引导 PAT 输入, remote URL 临时带 token
 ```
 
 ---
