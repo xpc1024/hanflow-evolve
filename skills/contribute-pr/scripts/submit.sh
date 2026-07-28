@@ -2,7 +2,7 @@
 # submit.sh — SUBMIT 阶段 S1-S2: fork 准备 + push + 发代码 PR (spec §3.1)
 #
 # 用法: submit.sh <hanflow_repo> <repo>
-#   <repo>: hanflow (P0 必做) | hanflow-site (P2 文档 PR)
+#   <repo>: hanflow (P0 必做) | hanflow-home (P2 文档 PR)
 #
 # 架构 (P2 修正): 以贡献者 hanflow 仓库为工作目录,
 # state 在 <hanflow_repo>/.contribute/state.yaml。
@@ -10,11 +10,11 @@
 set -euo pipefail
 
 HANFLOW_REPO="${1:?Usage: submit.sh <hanflow_repo> <repo>}"
-REPO="${2:?Usage: submit.sh <hanflow_repo> <repo: hanflow|hanflow-site>}"
+REPO="${2:?Usage: submit.sh <hanflow_repo> <repo: hanflow|hanflow-home>}"
 
 case "$REPO" in
-  hanflow|hanflow-site) ;;
-  *) echo "ERROR: <repo> must be 'hanflow' or 'hanflow-site', got: $REPO" >&2; exit 1 ;;
+  hanflow|hanflow-home) ;;
+  *) echo "ERROR: <repo> must be 'hanflow' or 'hanflow-home', got: $REPO" >&2; exit 1 ;;
 esac
 
 [ -d "$HANFLOW_REPO" ] || { echo "ERROR: hanflow_repo not found: $HANFLOW_REPO" >&2; exit 1; }
@@ -46,7 +46,7 @@ FORK_REMOTE=$(printf '%s' "$READ_OUT" | sed -n '3p')
 # 上游仓库 (PR 目标)
 case "$REPO" in
   hanflow)      UPSTREAM="xpc1024/hanflow" ;;
-  hanflow-site) UPSTREAM="xpc1024/hanflow-site" ;;
+  hanflow-home) UPSTREAM="xpc1024/hanflow-home" ;;
 esac
 
 BRANCH="evolve/$CYCLE_ID"

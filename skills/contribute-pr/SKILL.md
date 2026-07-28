@@ -5,7 +5,7 @@ description: 面向无写权限的社区成员,复用 Hanflow 自进化体系(lo
   /contribute-pr topic <描述> (贡献者直接指定主题,跳过选题)
   /contribute-pr status (只读) /contribute-pr refresh (刷新本机贡献档案状态)
   /contribute-pr gate approve|revise|reject (Gate 确认)
-  /contribute-pr docs <描述> (纯文档贡献,跳到 hanflow-site)
+  /contribute-pr docs <描述> (纯文档贡献,跳到 hanflow-home)
   /contribute-pr abort (终止并清理 token)
   当用户说"给 hanflow 提 PR""社区贡献""contribute-pr"时触发。
   跨工具支持:ZCode / Claude Code(Claude Code 见 references/claude-code-adaptation.md);
@@ -140,8 +140,31 @@ contribute-pr 的 `state-contribute.yaml` **字段名与 loop-evolve 的 state.y
 | `/contribute-pr status` | 只读:打印当前 state + CONTRIBUTIONS.md 本机 open 记录 |
 | `/contribute-pr refresh` | 只刷新 CONTRIBUTIONS.md 的 open 记录状态(spec §5.4 触发点 3) |
 | `/contribute-pr gate approve\|revise\|reject` | Gate 确认(委托 loop-evolve gate 行为) |
-| `/contribute-pr docs <描述>` | 纯文档贡献:跳到 hanflow-site 直接走 submit(P2) |
+| `/contribute-pr docs <描述>` | 纯文档贡献:跳到 hanflow-home 直接走 submit(P2) |
 | `/contribute-pr abort` | 终止当前贡献,**清理 token**(从 git remote URL 抹除) |
+
+## `/contribute-pr docs <描述>` 子命令流程(P2)
+
+纯文档贡献(修错别字、补示例、改 contribute-pr.mdx 等)的专用路径,**跳过 scan→code 全流程**,
+直接对 hanflow-home(官网源)走简化 submit。流程:
+
+```
+1. 定位 hanflow-home 仓库 (默认 $HANFLOW_DEV_DIR/hanflow-home, 或询问贡献者)
+2. 创建 feature 分支 evolve/<cycle_id> 在 hanflow-home (cycle_id 用 docs- 前缀, 如 docs-2026-W30-001)
+3. 贡献者在 hanflow-home 里改文档 (人工或 AI 辅助, 不走 scan/design/code)
+4. 提交 (conventional commits, 用 docs: 前缀)
+5. S0 (docs 降级): bash scripts/pr-readiness-check-docs.sh <hanflow_home_repo>
+   - 只跑 npm run build + conventional commits (跳过 charter/lint/mypy)
+6. submit: bash scripts/submit.sh <hanflow_home_repo> hanflow-home
+   - fork 同步 + push + gh pr create 到 xpc1024/hanflow-home
+7. 归档: bash scripts/write-contribution.sh <hanflow_home_repo> (CONTRIBUTIONS.md 记一条)
+```
+
+**与默认流程的差异**:
+- 跳过 scan/prioritize/check_occupied/plan/design/code/verify(选题→编码全流程)
+- cycle_id 用 `docs-` 前缀(而非 `contrib-`),分支名 `evolve/docs-xxx`,PR 列表易区分
+- S0 用文档专用脚本(`pr-readiness-check-docs.sh`),不跑代码质量门
+- submit.sh 参数 `<repo>` 传 `hanflow-home`(PR 发到 xpc1024/hanflow-home)
 
 ## 子命令执行路径
 
@@ -161,7 +184,7 @@ contribute-pr 的 `state-contribute.yaml` **字段名与 loop-evolve 的 state.y
 | check_occupied(2.5) | `bash scripts/check-occupied.sh <hanflow_repo>`(Level 1,P1) |
 | submit.S0 | `bash scripts/pr-readiness-check.sh <hanflow_repo>` |
 | submit.S2 | `bash scripts/submit.sh <hanflow_repo> hanflow` |
-| submit.S3(P2) | `bash scripts/submit.sh <hanflow_repo> hanflow-site` |
+| submit.S3(P2) | `bash scripts/submit.sh <hanflow_repo> hanflow-home` |
 | submit.S4 | `bash scripts/write-contribution.sh <hanflow_repo>` + `bash scripts/refresh-status.sh <hanflow_repo>` |
 
 ## 凭证安全声明(启动时必须先打印,在请求任何输入之前)

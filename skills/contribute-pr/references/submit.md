@@ -119,9 +119,9 @@ S4. 归档与清理 ─── 写 CONTRIBUTIONS.md + 抹 token + state.phase=sub
 仅当本次涉及 user-facing 变更(CLI/DSL/API/schema/config)才触发。判定复用 loop-evolve
 release.md 的 site_sync_needed 逻辑(扫 feat:/BREAKING commits)。
 
-仓库指向 **hanflow-site**(github-only,无 gitee,Vercel 部署):
+仓库指向 **hanflow-home**(github-only,无 gitee,Vercel 部署):
 ```bash
-bash scripts/submit.sh <hanflow_repo> hanflow-site
+bash scripts/submit.sh <hanflow_repo> hanflow-home
 ```
 
 文档版本目录:`content/<version>/<locale>/`(当前 1.0.1,locale en+zh)。

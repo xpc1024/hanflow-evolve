@@ -27,7 +27,7 @@ if [ "$GH_AVAILABLE" -eq 1 ]; then
   gh pr list --repo xpc1024/hanflow --state all --limit 200 \
     --json number,title,headRefName,state 2>/dev/null >> "$TMP_PR" || true
   echo "" >> "$TMP_PR"
-  gh pr list --repo xpc1024/hanflow-site --state all --limit 200 \
+  gh pr list --repo xpc1024/hanflow-home --state all --limit 200 \
     --json number,title,headRefName,state 2>/dev/null >> "$TMP_PR" || true
 else
   echo "WARN: gh 未认证, 未查上游 GitHub, 去重不完整(跨贡献者去重失效)。" >&2

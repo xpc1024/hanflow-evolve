@@ -7,7 +7,7 @@
 #   1. 检测环境 (git / gh / AI 工具)
 #   2. clone hanflow-evolve (skill 源) → 装 contribute-pr + loop-evolve 到 ~/.zcode/skills/
 #   3. fork + clone hanflow (贡献者要改的代码, 自动 fork 或读用户名)
-#   4. clone hanflow-site (P2 文档 PR 用)
+#   4. clone hanflow-home (P2 文档 PR 用)
 #   5. 配置 upstream remote (发 PR 到 xpc1024/hanflow 需要)
 #   6. 打印下一步: cd hanflow, 跑 /contribute-pr
 #
@@ -25,7 +25,7 @@
 #   ~/hanflow-dev/
 #   ├── hanflow/         (贡献者工作目录, 长期, 改代码在这里)
 #   ├── hanflow-evolve/  (skill 源, 留着可 git pull 更新 skill)
-#   └── hanflow-site/    (P2 文档 PR 用)
+#   └── hanflow-home/    (P2 文档 PR 用)
 #
 # 一键安装 (官网文案给):
 #   curl -fsSL https://raw.githubusercontent.com/xpc1024/hanflow-evolve/main/install.sh | bash
@@ -47,7 +47,7 @@ HANFLOW_DEV_DIR="${HANFLOW_DEV_DIR:-$HOME/hanflow-dev}"
 EVOLVE_BRANCH="main"
 GITHUB_USER=""
 UPSTREAM_HANFLOW="xpc1024/hanflow"
-UPSTREAM_HANFLOW_SITE="xpc1024/hanflow-site"
+UPSTREAM_HANFLOW_SITE="xpc1024/hanflow-home"
 UPSTREAM_HANFLOW_EVOLVE="xpc1024/hanflow-evolve"
 
 # skill 安装目录 (.zcode 优先, 回退 .agents)
@@ -422,10 +422,10 @@ do_install() {
     warn "hanflow clone 未完成, 你可以手动 fork + clone 后再跑 /contribute-pr"
   }
 
-  # 4. clone hanflow-site (P2, 失败不阻断)
-  info "[可选] hanflow-site (P2 文档 PR 用)"
-  clone_repo "https://github.com/$UPSTREAM_HANFLOW_SITE" "$HANFLOW_DEV_DIR/hanflow-site" "hanflow-site" || \
-    warn "hanflow-site clone 失败 (P2 才需要, 可忽略)"
+  # 4. clone hanflow-home (P2, 失败不阻断)
+  info "[可选] hanflow-home (P2 文档 PR 用)"
+  clone_repo "https://github.com/$UPSTREAM_HANFLOW_SITE" "$HANFLOW_DEV_DIR/hanflow-home" "hanflow-home" || \
+    warn "hanflow-home clone 失败 (P2 才需要, 可忽略)"
 
   echo ""
   ok "===== 安装完成 ====="
@@ -513,7 +513,7 @@ contribute-pr 一键安装脚本
   ~/hanflow-dev/
   ├── hanflow/         (工作目录, 改代码)
   ├── hanflow-evolve/  (skill 源)
-  └── hanflow-site/    (P2 文档 PR 用)
+  └── hanflow-home/    (P2 文档 PR 用)
 EOF
     ;;
 esac

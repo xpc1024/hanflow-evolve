@@ -19,7 +19,7 @@ contribute-pr 在选题阶段的去重机制,防止贡献者与他人或历史�
 
 匹配**确定性标识**,命中即硬 skip:
 
-- `evolve/*` 分支名(上游 hanflow/hanflow-site 的 open PR 头分支)
+- `evolve/*` 分支名(上游 hanflow/hanflow-home 的 open PR 头分支)
 - `contrib-*` 分支名(社区贡献的分支,值带 contrib- 前缀)
 - PR 标题里的 contribution_id(如 `contrib-2026-W30-001`)
 - CONTRIBUTIONS.md 中 status=open 记录的 theme 字段
@@ -46,7 +46,7 @@ P2 再实现 Level 2 并校准阈值。
 # 主源:上游 GitHub(分布式真相,所有贡献者机器一致)
 gh pr list --repo xpc1024/hanflow --state all --limit 200 \
   --json number,title,headRefName,state
-gh pr list --repo xpc1024/hanflow-site --state all --limit 200 \
+gh pr list --repo xpc1024/hanflow-home --state all --limit 200 \
   --json number,title,headRefName,state
 
 # 辅源:本地 CONTRIBUTIONS.md(离线 + 本机已发未上游化的记录)
@@ -91,7 +91,7 @@ WARN: gh 未认证,未查上游 GitHub,去重不完整(跨贡献者去重失效)
 
 ```
 === check-occupied (Level 1) ===
-数据源: GitHub PR (hanflow: 12, hanflow-site: 3) + 本地 CONTRIBUTIONS.md (5 条)
+数据源: GitHub PR (hanflow: 12, hanflow-home: 3) + 本地 CONTRIBUTIONS.md (5 条)
 
 候选主题检查:
   [1] rag-retrieval-caching → OCCUPIED (open PR #42, 分支 evolve/contrib-2026-W30-001)
