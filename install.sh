@@ -50,10 +50,14 @@ UPSTREAM_HANFLOW="xpc1024/hanflow"
 UPSTREAM_HANFLOW_SITE="xpc1024/hanflow-home"
 UPSTREAM_HANFLOW_EVOLVE="xpc1024/hanflow-evolve"
 
-# skill 安装目录 (.zcode 优先, 回退 .agents)
+# skill 安装目录: 检测所有已装的 AI 工具, 返回主目录 (用于默认输出)
+# 注意: 主流程会用 SKILLS_DIR 装一份, Codex 段额外装 ~/.codex/, Claude 段额外装 ~/.claude/
 detect_skills_dir() {
+  # 优先级: .zcode > .claude > .agents (ZCode 是主目标)
   if [ -d "$HOME/.zcode" ] || [ -d "$HOME/.zcode/skills" ]; then
     echo "$HOME/.zcode/skills"
+  elif [ -d "$HOME/.claude" ] || [ -d "$HOME/.claude/skills" ]; then
+    echo "$HOME/.claude/skills"
   elif [ -d "$HOME/.agents" ] || [ -d "$HOME/.agents/skills" ]; then
     echo "$HOME/.agents/skills"
   else
@@ -61,6 +65,17 @@ detect_skills_dir() {
   fi
 }
 SKILLS_DIR="$(detect_skills_dir)"
+
+# 收集所有应装的 skill 目录 (ZCode/Claude/Agents 都装, 不只主目录)
+all_skills_dirs() {
+  local dirs=""
+  for d in "$HOME/.zcode/skills" "$HOME/.claude/skills" "$HOME/.agents/skills"; do
+    # 父目录存在才装 (.zcode/.claude/.agents 至少有一个)
+    [ -d "$(dirname "$d")" ] && dirs="$dirs $d"
+  done
+  # 去空格
+  echo "$dirs" | xargs
+}
 
 # 平台检测
 detect_platform() {
@@ -395,25 +410,68 @@ do_install() {
   fi
 
   # 2. 装 skill (从 clone 下来的 evolve 仓库)
+  # 装到所有已检测到的 AI 工具 skill 目录 (ZCode/Claude/Agents)
   info "[2/3] 安装 skill (contribute-pr + loop-evolve)"
-  for skill in contribute-pr loop-evolve; do
-    local src="$evolve_dest/skills/$skill"
-    if [ ! -d "$src" ]; then
-      fail "skill 源不存在: $src"
-      exit 1
+  local all_dirs
+  all_dirs=$(all_skills_dirs)
+  if [ -z "$all_dirs" ]; then
+    # 没检测到任何工具目录, 用默认 SKILLS_DIR (会创建)
+    all_dirs="$SKILLS_DIR"
+  fi
+  for skills_dir in $all_dirs; do
+    mkdir -p "$skills_dir"
+    for skill in contribute-pr loop-evolve; do
+      local src="$evolve_dest/skills/$skill"
+      if [ ! -d "$src" ]; then
+        fail "skill 源不存在: $src"
+        exit 1
+      fi
+      install_skill "$src" "$skills_dir/$skill" "$skill"
+    done
+    # charter-check 装到每个目录的 contribute-pr/scripts/
+    local cc_src="$evolve_dest/scripts/charter-check"
+    local cc_dest="$skills_dir/contribute-pr/scripts/charter-check"
+    if [ -d "$cc_src" ]; then
+      rm -rf "$cc_dest"
+      cp -r "$cc_src" "$cc_dest"
     fi
-    install_skill "$src" "$SKILLS_DIR/$skill" "$skill"
+    ok "skills 装到: $skills_dir"
   done
 
-  # 2b. 装 charter-check (contribute-pr S0 依赖, 来自 hanflow-evolve/scripts/)
-  local cc_src="$evolve_dest/scripts/charter-check"
-  local cc_dest="$SKILLS_DIR/contribute-pr/scripts/charter-check"
-  if [ -d "$cc_src" ]; then
-    rm -rf "$cc_dest"
-    cp -r "$cc_src" "$cc_dest"
-    ok "charter-check: 复制到 $cc_dest"
+  # 2c. 装 Codex 原生 skill (若 Codex 已装, 2025-12+ 原生 skill 机制)
+  # Codex 用 ~/.codex/agents/skills/ + SKILL.md (Description/Trigger/Steps 格式),
+  # 与 ZCode/Claude 的 frontmatter 格式不同, 故 contribute-pr/codex/SKILL.md 是专用翻译版。
+  local codex_skills_dir="$HOME/.codex/agents/skills"
+  if [ -d "$HOME/.codex" ]; then
+    info "检测到 Codex (~/.codex), 安装 Codex 原生 skill..."
+    mkdir -p "$codex_skills_dir"
+    # Codex 版 contribute-pr (含 codex/SKILL.md + 共享 scripts/references)
+    local codex_src="$evolve_dest/skills/contribute-pr"
+    local codex_dest="$codex_skills_dir/contribute-pr"
+    if [ -d "$codex_src" ]; then
+      rm -rf "$codex_dest"
+      cp -r "$codex_src" "$codex_dest"
+      # Codex 的 SKILL.md 是 codex/SKILL.md, 提到顶层覆盖 ZCode 版
+      if [ -f "$codex_dest/codex/SKILL.md" ]; then
+        cp "$codex_dest/codex/SKILL.md" "$codex_dest/SKILL.md"
+        ok "Codex contribute-pr: 装到 $codex_dest (codex SKILL.md 已覆盖到顶层)"
+      fi
+      # loop-evolve 也装 (Codex 委托需要), 用 ZCode 版 (Codex 能读 frontmatter 兜底)
+      local le_dest="$codex_skills_dir/loop-evolve"
+      if [ -d "$evolve_dest/skills/loop-evolve" ]; then
+        rm -rf "$le_dest"
+        cp -r "$evolve_dest/skills/loop-evolve" "$le_dest"
+        ok "Codex loop-evolve: 装到 $le_dest"
+      fi
+      # charter-check 同样装给 Codex 版
+      local codex_cc="$codex_dest/scripts/charter-check"
+      if [ -d "$cc_src" ]; then
+        rm -rf "$codex_cc"; cp -r "$cc_src" "$codex_cc"
+      fi
+      echo "  Codex 触发: \$contribute-pr 或自动发现 (codex /skills 查看)"
+    fi
   else
-    warn "charter-check 源不存在: $cc_src (S0 charter 复核将不可用)"
+    info "未检测到 Codex (~/.codex), 跳过 Codex 原生安装 (仅装 ZCode/Claude)"
   fi
 
   # 3. fork + clone hanflow
@@ -455,16 +513,24 @@ do_update_skills() {
   fi
   info "git pull hanflow-evolve..."
   git -C "$evolve_dest" pull --ff-only 2>&1 | sed 's/^/    /' || warn "pull 失败, 用本地版本"
-  for skill in contribute-pr loop-evolve; do
-    install_skill "$evolve_dest/skills/$skill" "$SKILLS_DIR/$skill" "$skill"
+  local all_dirs
+  all_dirs=$(all_skills_dirs)
+  [ -z "$all_dirs" ] && all_dirs="$SKILLS_DIR"
+  for skills_dir in $all_dirs; do
+    for skill in contribute-pr loop-evolve; do
+      install_skill "$evolve_dest/skills/$skill" "$skills_dir/$skill" "$skill"
+    done
+    local cc_src="$evolve_dest/scripts/charter-check"
+    local cc_dest="$skills_dir/contribute-pr/scripts/charter-check"
+    if [ -d "$cc_src" ]; then
+      rm -rf "$cc_dest"; cp -r "$cc_src" "$cc_dest"
+    fi
+    # Codex 版 SKILL.md 覆盖 (若该目录是 Codex)
+    if [[ "$skills_dir" == *".codex/agents/skills"* ]] && [ -f "$skills_dir/contribute-pr/codex/SKILL.md" ]; then
+      cp "$skills_dir/contribute-pr/codex/SKILL.md" "$skills_dir/contribute-pr/SKILL.md"
+    fi
+    ok "更新: $skills_dir"
   done
-  # 同步 charter-check
-  local cc_src="$evolve_dest/scripts/charter-check"
-  local cc_dest="$SKILLS_DIR/contribute-pr/scripts/charter-check"
-  if [ -d "$cc_src" ]; then
-    rm -rf "$cc_dest"; cp -r "$cc_src" "$cc_dest"
-    ok "charter-check: 已更新"
-  fi
   ok "skill 更新完成"
 }
 
