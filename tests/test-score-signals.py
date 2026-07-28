@@ -141,3 +141,40 @@ def test_themes_sorted_by_score_descending():
     result = run_score(signals)
     scores = [t["theme_score"] for t in result["themes"]]
     assert scores == sorted(scores, reverse=True), f"Not sorted desc: {scores}"
+
+
+def test_stub_module_extracted_from_windows_absolute_path():
+    """回归: stub 在 Windows 绝对路径下不应聚成 stub-E: / stub-e / stub-home。
+
+    历史 bug: _signal_module 用"过滤 hanflow 后取 parts[0]",但 Windows 绝对路径
+    E:/.../hanflow/hanflow/api/... 的 parts[0] 是盘符 'E:',导致所有 stub 聚成
+    一个错误的 stub-E: theme (19 stub 挤一起)。
+
+    修复: 定位路径中最后一个 /hanflow/ 包根, 取其后第一级目录作 module。
+    本测试锁住该行为, 三种路径风格都应聚成按真实模块的 theme。
+    """
+    # 三种路径风格, 都指向 observability 模块 (路径里有两个 hanflow: 仓库根 + 包根)
+    paths = [
+        "E:/opensource/hanflow/hanflow/observability/trace.py",          # Windows 绝对
+        "/e/opensource/hanflow/hanflow/observability/trace.py",          # MSYS
+        "/home/user/hanflow/hanflow/observability/trace.py",             # Linux
+    ]
+    signals = {
+        "cycle_id": "test", "degraded": {},
+        "signals": [
+            {"id": f"stub:{p}:{i}", "source": "source_stub", "weight_tier": "high",
+             "raw": {"type": "stub_impl", "file": p, "line": 80 + i, "snippet": "NotImplementedError"}}
+            for i, p in enumerate(paths)
+        ]
+    }
+    result = run_score(signals)
+    theme_ids = [t["theme_id"] for t in result["themes"]]
+
+    # 三条 signal 应聚成同一个 stub-observability theme (而非 stub-E:/stub-e/stub-home)
+    assert "stub-observability" in theme_ids, f"应为 stub-observability, 实际: {theme_ids}"
+    assert "stub-E:" not in theme_ids, "Windows 盘符泄露到 theme_id (回归 bug)"
+    assert "stub-e" not in theme_ids, "MSYS 盘符泄露到 theme_id"
+    obs_theme = next(t for t in result["themes"] if t["theme_id"] == "stub-observability")
+    assert len(obs_theme["member_signals"]) == 3, "三种路径应聚到同一模块"
+    assert obs_theme["affected_modules"] == ["observability"], \
+        f"affected_modules 应为 ['observability'], 实际: {obs_theme['affected_modules']}"
