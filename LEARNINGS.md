@@ -118,6 +118,7 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 - **设计文档先探查 fixture 再写计划**：execution-plan 的 NexusState/WorkflowNode 构造假设常与实际不符，subagent 要现读 conftest。计划阶段先跑 fixture 探查可省后续调整。**2026-W30 用 Explore agent 一次性探查 8 个文件,significantly 减少 P8 调整次数**。
 - **commit 用 `git add <具体文件>` 不用 `-A`**：`-A` 会扫进运行时产物（workflows/*.yaml），跟着 merge 进 release。已 gitignore workflows/*.yaml + web/web-dev.log。
 - **release 前校验 LICENSE 完整性**：master 的 LICENSE 曾是空文件（0 行），靠 github/main 恢复。
+- **官网 MDX 正文里的文档间链接写 `/docs/...`（不带 locale 前缀）**：渲染层（`MDXRenderer`）已注入 locale-aware 的 `<a>` 组件，会自动把 `/docs/xxx` 转成 `/<locale>/docs/xxx`。作者在 MDX 里**不要手写 `/zh/docs/` 或 `/en/docs/`**——那样会写死语言、切换 locale 时跨语言跳转。写无前缀的 `/docs/xxx` 即可，渲染层统一处理。来源：contribute-pr docs 子命令提交 community 文档时暴露的跨语言跳转 bug（zh 页"下一页"跳到 en），commit `8287134` 在渲染层修复。**site-sync（release P8 同步官网）和 contribute-pr docs 子命令提交文档时都要遵守。**
 
 ### DOCKER sandbox cycle 新增有效做法（2026-W30-1.1.1）
 

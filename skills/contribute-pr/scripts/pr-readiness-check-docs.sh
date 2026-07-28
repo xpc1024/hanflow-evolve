@@ -9,6 +9,12 @@
 # 检查项:
 #   1. npm run build (Next.js 构建, 确保改动的 MDX/导航不破站点)
 #   2. 提交历史合规 (conventional commits)
+#
+# ⚠️ MDX 链接规范提醒 (LEARNINGS 有效实践):
+#   MDX 正文里的文档间链接请写 /docs/xxx (不带 locale 前缀),
+#   渲染层 (MDXRenderer) 会自动加当前 locale 前缀 (/zh/docs/xxx 或 /en/docs/xxx)。
+#   不要手写 /zh/docs/ 或 /en/docs/ — 会写死语言, 切换 locale 时跨语言跳转。
+#   外链 (https://...) 不受影响, 照常写。
 set -euo pipefail
 
 HANFLOW_HOME_REPO="${1:?Usage: pr-readiness-check-docs.sh <hanflow_home_repo>}"
