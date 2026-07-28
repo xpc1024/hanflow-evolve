@@ -35,19 +35,22 @@ else
 fi
 
 # 候选主题: 从 state.artifacts.signals 读 (若有效)
+# 路径走环境变量, 不插值进 python -c (MSYS 兼容, 对齐 signal-gather.sh 约定)
 SIGNALS_FILE=""
 if [ -f "$STATE" ]; then
-  SIGNALS_FILE=$(python -c "
-import yaml
-s = yaml.safe_load(open('$STATE', encoding='utf-8'))
+  SIGNALS_FILE=$(STATE_FILE="$STATE" python -c "
+import os, yaml
+s = yaml.safe_load(open(os.environ['STATE_FILE'], encoding='utf-8'))
 print((s.get('artifacts') or {}).get('signals') or '')
 " 2>/dev/null || echo "")
 fi
 
-if [ -n "$SIGNALS_FILE" ] && [ -f "$HANFLOW_REPO/$SIGNALS_FILE" ]; then
-  python -c "
-import json
-d = json.load(open('$HANFLOW_REPO/$SIGNALS_FILE', encoding='utf-8'))
+# 拼接绝对路径 (SIGNALS_FILE 是相对 hanflow_repo 的)
+SCORED_ABS="$HANFLOW_REPO/$SIGNALS_FILE"
+if [ -n "$SIGNALS_FILE" ] && [ -f "$SCORED_ABS" ]; then
+  SCORED_FILE="$SCORED_ABS" python -c "
+import json, os
+d = json.load(open(os.environ['SCORED_FILE'], encoding='utf-8'))
 themes = d.get('themes') or d.get('candidates') or []
 if isinstance(themes, list):
     for t in themes:
@@ -76,9 +79,10 @@ while IFS=$'\t' read -r THEME_ID MODULES; do
 
   # 查 GitHub PR
   if [ -s "$TMP_PR" ]; then
-    PR_INFO=$(python -c "
-import json, re
-content = open('$TMP_PR', encoding='utf-8').read()
+    PR_INFO=$(PR_FILE="$TMP_PR" THEME="$THEME_ID" python -c "
+import json, os, re
+content = open(os.environ['PR_FILE'], encoding='utf-8').read()
+theme = os.environ['THEME']
 chunks = [c for c in re.split(r'\n\s*\n', content) if c.strip()]
 for chunk in chunks:
     try:
@@ -86,7 +90,7 @@ for chunk in chunks:
         if not isinstance(items, list): continue
         for it in items:
             head = (it.get('headRefName') or ''); title = (it.get('title') or '')
-            if '${THEME_ID}' in head or '${THEME_ID}' in title:
+            if theme in head or theme in title:
                 print(f\"{it.get('state','')}#{it.get('number','')}\"); break
     except: pass
 " 2>/dev/null || echo "")

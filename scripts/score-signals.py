@@ -197,7 +197,12 @@ THEME_META: dict[str, tuple[str, str, str]] = {
 
 
 def _signal_module(signal: dict[str, Any]) -> str:
-    """从 signal 抽取模块名: 优先 raw.module, 否则从 file 路径推导。"""
+    """从 signal 抽取模块名: 优先 raw.module, 否则从 file 路径推导。
+
+    路径推导定位 hanflow 包根 (路径中最后一个 'hanflow/' 段), 取其后第一级目录。
+    这样无论绝对路径前缀 (Windows E:/ / MSYS /e/ / Linux /home/) 都能正确提取模块,
+    不被盘符或父目录名污染。修复 issue: Windows 上 stub 错聚成 stub-E:。
+    """
     raw = signal.get("raw", {}) or {}
     mod = raw.get("module")
     if mod:
@@ -205,7 +210,19 @@ def _signal_module(signal: dict[str, Any]) -> str:
     f = raw.get("file", "") or ""
     if f:
         norm = str(f).replace("\\", "/")
-        parts = [p for p in norm.split("/") if p and p != "hanflow"]
+        # 定位最后一个 'hanflow/' 包根, 取其后第一级目录作为 module
+        # 例: E:/opensource/hanflow/hanflow/api/routes/observe.py
+        #     → 包根是第二个 hanflow/, 取 'api'
+        idx = norm.rfind("/hanflow/")
+        if idx >= 0:
+            tail = norm[idx + len("/hanflow/"):]
+            parts = [p for p in tail.split("/") if p]
+            # 去掉文件名 (最后一段含 .py)
+            parts = [p for p in parts if not p.endswith(".py")]
+            return parts[0] if parts else ""
+        # 回退: 无 hanflow/ 段 (测试夹具或非标准布局), 用旧逻辑但过滤盘符
+        parts = [p for p in norm.split("/") if p and p != "hanflow"
+                 and not (len(p) == 2 and p[1] == ":")]
         return parts[0] if parts else ""
     return ""
 

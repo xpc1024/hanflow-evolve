@@ -16,9 +16,9 @@ STATE="$CONTRIB_DIR/state.yaml"
 mkdir -p "$CONTRIB_DIR"
 [ -f "$STATE" ] || { echo "ERROR: state.yaml not found: $STATE" >&2; exit 1; }
 
-# 读 state
+# 读 state (走环境变量避免 MSYS 路径插值 bug)
 READ_OUT=$(STATE_FILE="$STATE" python -c "
-import yaml
+import os, yaml
 s = yaml.safe_load(open(os.environ['STATE_FILE'], encoding='utf-8'))
 print(s.get('cycle_id') or '')
 print(s.get('target_theme') or '')
@@ -26,16 +26,7 @@ submit = s.get('submit') or {}
 print(submit.get('pr_code_url') or '-')
 print(submit.get('pr_docs_url') or '-')
 print(submit.get('quality') or 'null')
-" 2>/dev/null || python -c "
-import os, yaml
-s = yaml.safe_load(open('$STATE', encoding='utf-8'))
-print(s.get('cycle_id') or '')
-print(s.get('target_theme') or '')
-submit = s.get('submit') or {}
-print(submit.get('pr_code_url') or '-')
-print(submit.get('pr_docs_url') or '-')
-print(submit.get('quality') or 'null')
-")
+" 2>/dev/null || echo "")
 CYCLE_ID=$(printf '%s' "$READ_OUT" | sed -n '1p')
 TARGET_THEME=$(printf '%s' "$READ_OUT" | sed -n '2p')
 PR_CODE=$(printf '%s' "$READ_OUT" | sed -n '3p')

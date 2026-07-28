@@ -22,9 +22,9 @@ if ! gh auth status >/dev/null 2>&1; then
   exit 0
 fi
 
-OPEN_RECORDS=$(python -c "
-import re
-content = open('$CONTRIB_FILE', encoding='utf-8').read()
+OPEN_RECORDS=$(CONTRIB="$CONTRIB_FILE" python -c "
+import os, re
+content = open(os.environ['CONTRIB'], encoding='utf-8').read()
 blocks = re.split(r'\n(?=## )', content)
 for block in blocks:
     m_id = re.search(r'^## ([^\s·]+)', block)
@@ -79,13 +79,14 @@ if [ -s "$UPDATES_TMP" ]; then
   echo "应用 $UPDATED 条更新..."
   TMP_FILE="${CONTRIB_FILE}.tmp"
   cp "$CONTRIB_FILE" "$TMP_FILE"
-  python -c "
-import re
+  UPDATES="$UPDATES_TMP" TFILE="$TMP_FILE" python -c "
+import os, re
 updates = {}
-for line in open('$UPDATES_TMP', encoding='utf-8'):
+for line in open(os.environ['UPDATES'], encoding='utf-8'):
     parts = line.strip().split('|')
     if len(parts) == 3: updates[parts[0]] = (parts[1], parts[2])
-content = open('$TMP_FILE', encoding='utf-8').read()
+tfile = os.environ['TFILE']
+content = open(tfile, encoding='utf-8').read()
 blocks = re.split(r'(\n## )', content)
 out = []
 for b in blocks:
@@ -96,7 +97,7 @@ for b in blocks:
             b = re.sub(r'^- status:\s*\w+', f'- status: {new_status}', b, flags=re.M)
             b = re.sub(r'^- merged:\s*\S+', f'- merged: {merged_date}', b, flags=re.M)
     out.append(b)
-open('$TMP_FILE', 'w', encoding='utf-8').write(''.join(out))
+open(tfile, 'w', encoding='utf-8').write(''.join(out))
 " 2>&1 || { echo "ERROR: 更新失败, 保留原文件" >&2; rm -f "$TMP_FILE"; exit 1; }
   mv "$TMP_FILE" "$CONTRIB_FILE"
   echo "OK: CONTRIBUTIONS.md 已更新 $UPDATED 条"

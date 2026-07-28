@@ -29,22 +29,17 @@ if [ ! -f "$WRITE_STATE" ]; then
   WRITE_STATE=""  # 后面 fallback
 fi
 
-# 读 state (hanflow 路径 = 参数本身, 不再从 config 读)
-CYCLE_ID=$(python -c "
-import yaml
-s = yaml.safe_load(open('$STATE', encoding='utf-8'))
+# 读 state (一次性, 走环境变量避免 MSYS 路径插值 bug)
+READ_OUT=$(STATE_FILE="$STATE" python -c "
+import os, yaml
+s = yaml.safe_load(open(os.environ['STATE_FILE'], encoding='utf-8'))
 print(s.get('cycle_id') or '')
-" 2>/dev/null || echo "")
-TARGET_THEME=$(python -c "
-import yaml
-s = yaml.safe_load(open('$STATE', encoding='utf-8'))
 print(s.get('target_theme') or '')
-" 2>/dev/null || echo "")
-FORK_REMOTE=$(python -c "
-import yaml
-s = yaml.safe_load(open('$STATE', encoding='utf-8'))
 print((s.get('submit') or {}).get('fork_remote') or '')
 " 2>/dev/null || echo "")
+CYCLE_ID=$(printf '%s' "$READ_OUT" | sed -n '1p')
+TARGET_THEME=$(printf '%s' "$READ_OUT" | sed -n '2p')
+FORK_REMOTE=$(printf '%s' "$READ_OUT" | sed -n '3p')
 
 [ -z "$CYCLE_ID" ] && { echo "ERROR: cycle_id empty" >&2; exit 1; }
 

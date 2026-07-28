@@ -27,10 +27,10 @@ STATE="$HANFLOW_REPO/.contribute/state.yaml"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CHARTER_CHECK_DIR="$SCRIPT_DIR/charter-check"
 
-# 读 cycle_id (state 字段名与 loop-evolve 同构)
-CYCLE_ID=$(python -c "
-import yaml
-s = yaml.safe_load(open('$STATE', encoding='utf-8'))
+# 读 cycle_id (state 字段名与 loop-evolve 同构; 走环境变量避免 MSYS 路径插值)
+CYCLE_ID=$(STATE_FILE="$STATE" python -c "
+import os, yaml
+s = yaml.safe_load(open(os.environ['STATE_FILE'], encoding='utf-8'))
 print(s.get('cycle_id') or '')
 " 2>/dev/null || echo "")
 [ -z "$CYCLE_ID" ] && { echo "ERROR: state.yaml cycle_id is empty" >&2; exit 1; }
