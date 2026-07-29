@@ -1,15 +1,15 @@
 # state.yaml — LOOP 唯一状态真相源 (spec §2.2)
 # 由 write-state.sh 原子更新, 请勿手动编辑
 
-cycle_id: null
+cycle_id: "2026-W31-1.2.1"
 current_version: "1.2.0"
-target_version: null
-target_theme: null
-phase: awaiting_next_cycle
+target_version: "1.2.1"
+target_theme: "clear-preexisting-tech-debt-s0-gates"
+phase: "release"
 gate_status: "approved"
 retry_count: 0
 audit_retry_count: 0
-started_at: "2026-07-20T14:13:43Z"
+started_at: "2026-07-29T00:00:00Z"
 artifacts:
   signals: null
   direction: null
@@ -21,13 +21,13 @@ artifacts:
 last_error: null
 last_cycle_completed: "2026-07-21"
 last_reminded: null
-site_sync_needed: true
+site_sync_needed: false
 revision_feedback: null
 pending_human_topic: null
 artifacts.signals: "cycles/2026-W30-1.1.1/signals.json"
-artifacts.direction: "cycles/2026-W30-1.1.1/direction.md"
-artifacts.design: "cycles/2026-W30-1.1.1/design.md"
-artifacts.test_report: "cycles/2026-W30-1.1.1/test-report.md"
+artifacts.direction: "cycles/2026-W31-1.2.1/direction.md"
+artifacts.design: "cycles/2026-W31-1.2.1/design.md"
+artifacts.test_report: "cycles/2026-W31-1.2.1/test-report.md"
 artifacts.audit_direction: "cycles/2026-W30-1.1.1/audit-direction.md"
 artifacts.audit_design: "cycles/2026-W30-1.1.1/audit-design.md"
-artifacts.execution_plan: "cycles/2026-W30-1.1.1/execution-plan.md"
+artifacts.execution_plan: "cycles/2026-W31-1.2.1/execution-plan.md"

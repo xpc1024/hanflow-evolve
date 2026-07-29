@@ -138,7 +138,7 @@ def main():
         raise SystemExit(f"ERROR: hanflow path not found: {hanflow}")
 
     init_py = os.path.join(hanflow, "hanflow", "__init__.py")
-    api_init = os.path.join(hanflow, "api", "__init__.py")
+    api_init = os.path.join(hanflow, "hanflow", "api", "__init__.py")
     pyproject = os.path.join(hanflow, "pyproject.toml")
     package_json = os.path.join(hanflow, "web", "package.json")
     changelog = os.path.join(hanflow, "CHANGELOG.md")
