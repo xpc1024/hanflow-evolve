@@ -186,6 +186,7 @@ contribute-pr 的 `state-contribute.yaml` **字段名与 loop-evolve 的 state.y
 | submit.S2 | `bash scripts/submit.sh <hanflow_repo> hanflow` |
 | submit.S3(P2) | `bash scripts/submit.sh <hanflow_repo> hanflow-home` |
 | submit.S4 | `bash scripts/write-contribution.sh <hanflow_repo>` + `bash scripts/refresh-status.sh <hanflow_repo>` |
+| submit.S5 | `bash scripts/honor-submit.sh <hanflow_repo> <hanflow_home_repo>`(贡献者名录登记,无条件必做) |
 
 ## 凭证安全声明(启动时必须先打印,在请求任何输入之前)
 
