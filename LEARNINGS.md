@@ -67,11 +67,11 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 ### 高优先级
 
 - **[2026-W29-1.0.2] LLM 流式输出已落地 (v1.1.0)**: StreamChunk + Protocol.stream + Router.stream + emit_run_event + openai/glm 实现 + 4 占位。已完成。
-- **[2026-W29-1.0.2] version-bump.sh 路径 bug**: 脚本找 `api/__init__.py`，实际在 `hanflow/api/__init__.py`（包内）。**本 cycle (2026-W30-1.1.1) 再次手动 bump 绕过，脚本待修**。
+- **[2026-W29-1.0.2] version-bump.sh 路径 bug ✓ 已修 (2026-W31-1.2.1)**: 脚本找 `api/__init__.py`，实际在 `hanflow/api/__init__.py`（包内）。跑了 2 个 cycle 手动绕过后，本 cycle 修正 `api_init = os.path.join(hanflow, "hanflow", "api", "__init__.py")`，`version-bump.sh` 现可一键对齐 4 处版本号。
 - **[2026-W29-1.0.2] hanflow 远程 master→main 迁移**: 用户决定废弃 master 只留 main。GitHub/Gitee 的 main 已含 v1.1.0，但远程 master 分支未删（待清理）。github-sync.sh 硬编码 main 现在反而对了。
 - **[2026-W30-1.1.1] DOCKER sandbox 已落地 (v1.2.0)**: core/sandbox_contract.py(类型上移 + SandboxProvisioner Protocol)+ LocalProvisioner + DockerProvisioner (aiodocker) + K8sProvisioner 占位 + build_sandbox 组合根 + code_exec DOCKER 路径。**DOCKER 契约测试本地未实跑(Docker Desktop 未启)**,需在有 daemon 的环境验证 4 个 skipif 测试。
 - **[2026-W30-1.1.1] Pydantic v2 不接受 typing.Protocol 作为字段类型**: 即使 `arbitrary_types_allowed=True` 也抛 `SchemaError: 'cls' must be valid as the first argument to 'isinstance'`。`ProvisionedSandbox.exec_interface` 改用 `Any` + docstring 说明运行时契约是 `ExecInterface`(@runtime_checkable 可用 isinstance 校验)。**设计文档凡是 Pydantic 模型持 Protocol 字段,都用 Any**。
-- **[2026-W30-1.1.1] mypy 在 Python 3.13 + numpy stub 上无法运行**: mypy 2.3 不支持 `type` 语句,numpy stub 用了它。本 cycle mypy 完全跑不起来(P9 verify 标记为环境阻塞)。考虑 pin mypy 或用 standalone Python 3.12 container。
+- **[2026-W30-1.1.1] mypy 在 Python 3.13 + numpy stub 上无法运行 ✓ 环境已恢复 (2026-W31-1.2.1)**: 上周期 mypy 因 Python 3.13 + numpy stub 阻塞跑不起来,本周期正常(strict,114 文件)。环境问题自然解决,无需 pin。**但环境阻塞期间掩盖了真实债**:`models/providers/base.py` 缺 `__all__` 导致 StreamChunk/TokenUsage 重导出在 strict 模式报 attr-defined(16 错,影响 13 文件),已加 `__all__` 修复。教训:环境恢复后必须立即重跑全量门。
 - **[2026-W30-1.1.1] smoke-test.sh from_yaml bug 已修**: 原脚本 `WorkflowDSL.from_yaml(path)` 传文件路径,实际 API 接受 YAML 文本。`yaml.safe_load(裸字符串)` 返回字符串本身 → pydantic 拒绝。commit `aa4763d` 已修。顺手修了内嵌 yaml 用 `list[WorkflowNode]` + NodeType 字面量(原是 dict-of-dicts + kind)。
 - **[2026-W30-1.1.1] Windows 路径在容器/POSIX 上下文下必须手动 POSIX 化**: `Path("/workspace") / "agent-x"` 在 Windows host 上返回 `\workspace\agent-x`,Docker container 内无法识别。spawn_agent 用 `str(...).replace("\\", "/")` + 字符串拼接绕过。**新增规则:任何涉及容器内路径都用字符串拼接,不用 Path /**。
 - **[2026-W30-1.1.1] site_sync 的空头承诺问题已修**: cycle 2026-W29-1.0.2 与 2026-W30-1.1.1 都标记 `site_sync_needed: true`, 但 release 阶段从未实际执行 Phase C(github-sync.sh 只实现 Phase A, 注释把 Phase B/C 推给"调用方外部触发", 但 SKILL 也没做)。vercel 上官网版本停在 1.0.1(hanflow 已到 1.2.0)。用户 2026-07-21 反馈后,**新规则**:hanflow 版本号变化即同步(取代原"仅 feat/BREAKING"); 新增 `scripts/site-sync.sh`(幂等); github-sync.sh 集成 Phase A/B/C 三阶段; LEARNINGS "流程偏好"记录新规则。下次 release 起自动同步 site,无需人工。
@@ -119,6 +119,14 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 - **commit 用 `git add <具体文件>` 不用 `-A`**：`-A` 会扫进运行时产物（workflows/*.yaml），跟着 merge 进 release。已 gitignore workflows/*.yaml + web/web-dev.log。
 - **release 前校验 LICENSE 完整性**：master 的 LICENSE 曾是空文件（0 行），靠 github/main 恢复。
 - **官网 MDX 正文里的文档间链接写 `/docs/...`（不带 locale 前缀）**：渲染层（`MDXRenderer`）已注入 locale-aware 的 `<a>` 组件，会自动把 `/docs/xxx` 转成 `/<locale>/docs/xxx`。作者在 MDX 里**不要手写 `/zh/docs/` 或 `/en/docs/`**——那样会写死语言、切换 locale 时跨语言跳转。写无前缀的 `/docs/xxx` 即可，渲染层统一处理。来源：contribute-pr docs 子命令提交 community 文档时暴露的跨语言跳转 bug（zh 页"下一页"跳到 en），commit `8287134` 在渲染层修复。**site-sync（release P8 同步官网）和 contribute-pr docs 子命令提交文档时都要遵守。**
+
+### 技术债清理 cycle 新增有效做法（2026-W31-1.2.1）
+
+- **TYPE_CHECKING stub 也是源码,会被 charter-check 扫描**：为让 mypy 精确识别 `aiodocker` 的 `Docker`/`DockerError` 类型，初版在 `docker_provisioner.py` 加了 `class DockerError(Exception): ...` stub，结果 charter errors 守护（§2 不变量 1：所有异常须继承 HanflowError）误判违规。正解：用 `type[Any]` 返回注解 + `pyproject.toml` `[[tool.mypy.overrides]] ignore_missing_imports`，既不触发 charter 又保持 mypy 绿。**规则：给可选三方库写 type-checking 占位类时，若占位的是 Exception 子类，会命中 charter errors 守护——优先用 `type[Any]` 绕过**。
+- **环境阻塞会掩盖真实债,mypy 恢复后必须立即重跑**：上周期（2026-W30）mypy 因 Python 3.13 + numpy stub 跑不起来，`base.py` 缺 `__all__` 的 16 个 attr-defined 错长期潜伏。本周期 mypy 恢复后立即暴露。**规则：任何因环境问题被标记为 "blocked" 的质量门，下次环境恢复时第一件事就是重跑全量**。
+- **重导出模块必须显式 `__all__`**：`from hanflow.core.result import StreamChunk` 做 back-compat 重导出时，mypy strict 模式不认隐式重导出（报 attr-defined）。凡是用 `from X import Y` 为兼容性而 re-export 的模块，必须同时声明 `__all__` 把 Y 列入公开 API。
+- **lint/format/typecheck 三门应作为 PR 合并的硬门槛**：本周期清理前 `make ci` 三门全红（15 lint + 25 format + 28 mypy），但贡献者 PR #5 仍被合入（因其改的文件恰好不在失败面）。建议 CI 里三门独立 job 互不掩盖，任一红即阻断。
+- **version-bump.sh 旧账要一次性清零,别再手动绕过**：该脚本 `api/__init__.py` 路径 bug 跑了 2 个 cycle 都被"手动 bump"绕过（LEARNINGS 旧条目），本周期直接修脚本，以后 release 一键对齐 4 处版本号。
 
 ### DOCKER sandbox cycle 新增有效做法（2026-W30-1.1.1）
 
@@ -203,11 +211,11 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 
 1. **[高] 在有 docker daemon 的环境实跑 DockerProvisioner 契约测试** —— 本 cycle (2026-W30-1.1.1) 4 个生命周期测试 skipif 跳过,真实 container create/exec/destroy 路径**未在 CI 验证**。下次有 daemon 时必须手跑(或加 GitHub Actions docker service)。
 2. **[高] LOOP 框架自身技术债批量修**(可选独立 cycle):
-   - `version-bump.sh` 路径 bug(api/__init__.py 实际在 hanflow/api/__init__.py,2 个 cycle 都手动绕过)
-   - `score-signals.py` Windows 路径 bug(LEARNINGS #6,2 个 cycle 都复现)
+   - ~~`version-bump.sh` 路径 bug~~ ✓ 已修 (2026-W31-1.2.1)
+   - `score-signals.py` Windows 路径 bug(LEARNINGS #6,3 个 cycle 都复现,仍未修)
    - smoke-test.sh 更全面自检
 3. **[高] site_sync 触发**:本周期 site_sync_needed=true(docker-sandbox 是 feature),但 release 阶段未实际触发 hanflow-home 重建。v1.1.0 + v1.2.0 都未同步,需要把 hanflow-home 同步跑一遍。
-4. **[中] mypy 环境修复**:Python 3.13 + numpy stub 阻塞,考虑 pin mypy + Python 3.12 container。
+4. ~~**[中] mypy 环境修复**:Python 3.13 + numpy stub 阻塞~~ ✓ 环境已自然恢复 (2026-W31-1.2.1),strict mypy 可跑,28 错已清零。
 5. **[中] DOCKER sandbox 的镜像构建流水线**:本 cycle 用预构建 `python:3.11-slim`,但用户需要带 hanflow runtime 的定制镜像(含 SDK/依赖)。下个 cycle 可以做。
 6. **[中] K8S sandbox 落地 (Phase 10)**:本 cycle 只占位 NotImplementedError。
 7. **[中] MCP remote transport 实现**(工具生态,2 个 cycle 都是 source_stub 高信号)。

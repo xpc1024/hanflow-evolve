@@ -1,11 +1,11 @@
 # state.yaml — LOOP 唯一状态真相源 (spec §2.2)
 # 由 write-state.sh 原子更新, 请勿手动编辑
 
-cycle_id: "2026-W31-1.2.1"
-current_version: "1.2.0"
-target_version: "1.2.1"
-target_theme: "clear-preexisting-tech-debt-s0-gates"
-phase: "release"
+cycle_id: null
+current_version: "1.2.1"
+target_version: null
+target_theme: null
+phase: "awaiting_next_cycle"
 gate_status: "approved"
 retry_count: 0
 audit_retry_count: 0
@@ -19,7 +19,7 @@ artifacts:
   execution_plan: null
   test_report: null
 last_error: null
-last_cycle_completed: "2026-07-21"
+last_cycle_completed: "2026-07-29"
 last_reminded: null
 site_sync_needed: false
 revision_feedback: null
