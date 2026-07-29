@@ -166,6 +166,20 @@ contribute-pr 的 `state-contribute.yaml` **字段名与 loop-evolve 的 state.y
 - S0 用文档专用脚本(`pr-readiness-check-docs.sh`),不跑代码质量门
 - submit.sh 参数 `<repo>` 传 `hanflow-home`(PR 发到 xpc1024/hanflow-home)
 
+## S6 文档内容同步(submit 内自动)
+
+submit 的 home-sync 阶段会自动判断是否需要更新官网文档(spec 2026-07-29-doc-sync-s6-design.md):
+
+1. **S0.5 版本判断**(S2 前):AI 读 `references/semver-rules.md` + commit/diff → BUMP_TYPE(major/minor/patch)+ NEW_VERSION
+   - MAJOR:警告暂停(社区贡献一般不 breaking)
+   - 结果传给 S2(改框架 `__init__.py`)+ home-sync(改官网 `lib/versions.ts`)
+2. **S6.1 文档判断**(home-sync 内):`doc-sync-judge.sh` 读代码 diff 匹配 `doc-mapping.yaml`
+   - 非 user-facing → 跳过文档
+   - user-facing → AI 生成 zh+en 文档草稿 → 贡献者 git diff review
+3. **home-sync 合并 PR**:名录(contributors.json)+ 文档(若有)+ 版本切换器(若有)合并发一个 hanflow-home PR
+
+**docs 子命令不 bump 版本**(文档修订不改变软件版本)。
+
 ## 子命令执行路径
 
 非默认流程的子命令,直接调脚本,不进阶段循环(`<hanflow_repo>` 是贡献者 clone 的 hanflow 仓库):
@@ -186,7 +200,8 @@ contribute-pr 的 `state-contribute.yaml` **字段名与 loop-evolve 的 state.y
 | submit.S2 | `bash scripts/submit.sh <hanflow_repo> hanflow` |
 | submit.S3(P2) | `bash scripts/submit.sh <hanflow_repo> hanflow-home` |
 | submit.S4 | `bash scripts/write-contribution.sh <hanflow_repo>` + `bash scripts/refresh-status.sh <hanflow_repo>` |
-| submit.S5 | `bash scripts/honor-submit.sh <hanflow_repo> <hanflow_home_repo>`(贡献者名录登记,无条件必做) |
+| submit.S0.5 | 版本判断(AI 读 semver-rules.md + commit/diff → BUMP_TYPE + NEW_VERSION;MAJOR 警告暂停) |
+| submit.home-sync | `bash scripts/home-sync.sh <hanflow_repo> <hanflow_home_repo> [new_version]`(S5名录+S6文档+版本切换器,合并一个 PR) |
 
 ## 凭证安全声明(启动时必须先打印,在请求任何输入之前)
 

@@ -164,21 +164,32 @@ bash scripts/submit.sh <hanflow_repo> hanflow-home
 
 ---
 
-## S5. 贡献者名录登记(无条件,必做)
+## home-sync: hanflow-home 单一 PR(S5名录 + S6文档 + 版本切换器)
 
-无论本次是否 user-facing、是否发了 S3 文档 PR,都发贡献者名录登记 PR。
-登记的是**贡献行为本身**(spec 2026-07-29 §2)。
+submit 的最后阶段,合并发一个 PR 到 hanflow-home(spec 2026-07-29-doc-sync-s6-design.md)。
 
-执行 `bash scripts/honor-submit.sh <hanflow_repo> <hanflow_home_repo>`:
+### S0.5 版本判断(S2 前)
 
-- S5.0 校验 hanflow-home 的 contribute-fork-home remote(无则提示 fork)
-- S5.1 读贡献信息(pr_url 取 pr_code_url 或 pr_docs_url 非空者;PAT 兜底 avatar)
-- S5.2 追加 data/contributors.json(头部插入,幂等)
-- S5.3 发 honor/<cycle_id> PR 到 xpc1024/hanflow-home
+AI 读 `references/semver-rules.md`,根据 commit prefix + 公开 API 变更判断 BUMP_TYPE:
+- `feat:` → MINOR(1.X.0)
+- `fix:`/`refactor:`/`docs:` → PATCH(1.0.X)
+- `BREAKING CHANGE`/`!` → MAJOR(X.0.0,警告暂停)
 
-回填 state.submit.pr_honor_url。
+结果 NEW_VERSION:S2 改框架 `__init__.py` + pyproject.toml;home-sync 改官网 `lib/versions.ts`。
 
-**MVP 不自动刷新 pr_status**(初始 open,跨仓库刷新复杂,见 spec §2.5)。
+### home-sync 执行
+
+执行 `bash scripts/home-sync.sh <hanflow_repo> <hanflow_home_repo> [new_version]`:
+
+- S5 名录登记:追加 contributors.json(无条件,幂等)
+- S6.1 文档判断:doc-sync-judge.sh 匹配 doc-mapping.yaml
+- S6.2-S6.3(若 user-facing):AI 生成 zh+en 文档 → 贡献者 git diff review
+- 版本切换器(若有 NEW_VERSION):lib/versions.ts + content/<新版本>/
+- 发一个 PR:home/<cycle_id> 到 xpc1024/hanflow-home
+
+回填 state.submit.pr_home_url。
+
+**MVP 不自动刷新 pr_status**(初始 open)。
 
 ---
 
