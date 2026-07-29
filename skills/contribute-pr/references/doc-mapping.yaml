@@ -1,0 +1,76 @@
+# 代码改动区域 → 文档映射 (S6 判断依据)
+# trigger_paths 用 glob 匹配 git diff 的文件路径
+# docs 路径的 <LATEST> 运行时从 lib/versions.ts LATEST_VERSION 替换
+# 新增模块时在此添加映射
+mappings:
+  - id: cli
+    trigger_paths:
+      - "hanflow/cli/**"
+    docs:
+      zh: "content/<LATEST>/zh/api-reference/cli.mdx"
+      en: "content/<LATEST>/en/api-reference/cli.mdx"
+    description: "CLI 命令增删改"
+
+  - id: dsl-schema
+    trigger_paths:
+      - "hanflow/core/dsl.py"
+      - "hanflow/orchestration/nodes/**"
+      - "hanflow/atoms/**"
+    docs:
+      zh:
+        - "content/<LATEST>/zh/core-concepts/dsl-syntax.mdx"
+        - "content/<LATEST>/zh/core-concepts/nodes.mdx"
+      en:
+        - "content/<LATEST>/en/core-concepts/dsl-syntax.mdx"
+        - "content/<LATEST>/en/core-concepts/nodes.mdx"
+    description: "DSL schema / 节点类型变更"
+
+  - id: rest-api
+    trigger_paths:
+      - "hanflow/api/routes/*.py"
+    docs:
+      zh: "content/<LATEST>/zh/api-reference/rest.mdx"
+      en: "content/<LATEST>/en/api-reference/rest.mdx"
+    description: "REST 端点变更"
+    # 注: webhooks.py / ws.py 有独立 mapping, doc-sync-judge 最长 trigger 优先
+
+  - id: error-codes
+    trigger_paths:
+      - "hanflow/core/errors.py"
+    docs:
+      zh: "content/<LATEST>/zh/api-reference/error-codes.mdx"
+      en: "content/<LATEST>/en/api-reference/error-codes.mdx"
+    description: "错误码变更"
+
+  - id: websocket
+    trigger_paths:
+      - "hanflow/api/ws.py"
+    docs:
+      zh: "content/<LATEST>/zh/api-reference/websocket.mdx"
+      en: "content/<LATEST>/en/api-reference/websocket.mdx"
+    description: "WebSocket 事件变更"
+
+  - id: webhooks
+    trigger_paths:
+      - "hanflow/api/routes/webhooks.py"
+    docs:
+      zh: "content/<LATEST>/zh/api-reference/webhooks.mdx"
+      en: "content/<LATEST>/en/api-reference/webhooks.mdx"
+    description: "Webhook 触发变更"
+
+  - id: configuration
+    trigger_paths:
+      - "hanflow/config.py"
+    docs:
+      zh: "content/<LATEST>/zh/configuration.mdx"
+      en: "content/<LATEST>/en/configuration.mdx"
+    description: "配置项 (yaml 键) 变更"
+
+# 这些路径改动不算 user-facing, 不触发文档更新
+ignore_paths:
+  - "hanflow/observability/**"
+  - "hanflow/persistence/**"
+  - "hanflow/isolation/**"
+  - "hanflow/memory/**"
+  - "tests/**"
+  - "**/__pycache__/**"
