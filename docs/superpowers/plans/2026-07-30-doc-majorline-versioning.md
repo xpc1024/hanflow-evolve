@@ -194,13 +194,15 @@ export function stripVersionPrefix(slug: string[]): string[] {
 
 /** 构造文档路径段; LATEST 线不加前缀, 其余线加 <major>.x/ 前缀。 */
 export function versionedPath(rest: string, version: string): string {
-  return version === LATEST_MAJOR ? rest : `${version}/${rest}`;
+  return version === LATEST_MAJOR ? rest : ${'`${version}/${rest}`'}; // 在 String.raw 模板内, 裸反引号会终止模板; 故用 ${'`...`'} 注入字面量反引号 + 模板表达式
 }
 `;
 
 writeFileSync(outPath, header + '\n' + helpers, 'utf8');
 console.log(`[gen-versions] wrote lib/versions.ts: MAJOR_VERSIONS=[${majors.join(', ')}] LATEST_MAJOR='${latestMajor}' LATEST_SEMVER='${latestSemver}'`);
 ```
+
+> 实现注记：`String.raw` 模板内裸反引号会终止模板，`versionedPath` 那行的 `` `${version}/${rest}` `` 改用 `${'`...`'}` 注入字面量反引号 + 模板表达式（生成结果为正常的 TS 模板字面量）。
 
 - [ ] **Step 2: 跑生成器重写 versions.ts**
 
