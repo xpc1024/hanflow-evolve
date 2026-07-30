@@ -24,17 +24,20 @@
 
 **关键: 每次有用户可见新特性,官网文档必须同步更新,否则用户无法知道新功能。**
 
-### Step 1: 版本目录创建
+### Step 1: 大版本线目录 (仅 major bump 才需要)
 ```bash
 cd E:/opensource/hanflow-home
-mkdir -p content/<target_version>/en content/<target_version>/zh
-# 从上一版本复制全部 MDX 作为基线 (若已有则跳过)
+# 大版本线模型: content/<major>.x/ (如 content/1.x/)。小版本(minor/patch)在现有线内原地改, 不建目录。
+# 仅当本次是 major bump 且 content/<新major>.x/ 不存在时, 从最近的旧线复制:
+#   cp -r content/<旧major>.x content/<新major>.x
+# site-sync.sh 已自动化此判断; 手动清单仅作核对。
 ```
 
-### Step 2: 版本清单更新
-- 更新 `lib/versions.ts`: VERSIONS 数组 + LATEST_VERSION
-- 更新 `tests/versions.test.ts`: 对应断言
-- 更新 `package.json`: version 字段
+### Step 2: 版本数据更新 (数据驱动)
+- 更新 `package.json`: version 字段 = 精确 semver (gen-versions.mjs 从此读 LATEST_SEMVER)
+- `lib/versions.ts` 不手改: build 的 prebuild 钩子(gen-versions.mjs)扫描 content/<major>.x/ + 读 package.json 自动生成
+- 小版本(minor/patch): content 目录与下拉均不动, 只原地改文档内容
+- 大版本(major): 新建 content/<新major>.x/ 后, 下拉自动多出一项(数据驱动)
 
 ### Step 3: 文档内容检查与更新 (核心步骤)
 **逐项检查本周期的新特性是否需要文档更新:**
