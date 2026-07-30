@@ -2,7 +2,7 @@
 # doc-sync-judge.sh — S6.1: 判断代码改动是否需要文档更新 (spec §3.2)
 #
 # 用法: doc-sync-judge.sh <hanflow_repo> <cycle_id> <hanflow_home_repo>
-#   <hanflow_home_repo> 用于读 lib/versions.ts 的 LATEST_VERSION 替换 <LATEST>
+#   <hanflow_home_repo> 用于读 lib/versions.ts 的 LATEST_MAJOR (大版本线, 如 1.x) 替换 <LATEST>
 #
 # 输出 (key=value 格式, 供 home-sync.sh 读取):
 #   DOC_NEEDED=0|1
@@ -21,9 +21,15 @@ MAPPING_FILE="$SCRIPT_DIR/../references/doc-mapping.yaml"
 
 [ -f "$MAPPING_FILE" ] || { echo "ERROR: doc-mapping.yaml not found: $MAPPING_FILE" >&2; exit 1; }
 
-# 读 LATEST_VERSION (从 lib/versions.ts)
-LATEST=$(grep "LATEST_VERSION" "$HANFLOW_HOME_REPO/lib/versions.ts" 2>/dev/null | sed -nE "s|.*'([^']+)'.*|\1|p" | head -1)
-[ -z "$LATEST" ] && LATEST="1.2.0"  # fallback
+# 读 LATEST_MAJOR (大版本线, 用于文档路径 content/<major>.x/...)
+# versions.ts 由 gen-versions.mjs 生成; 兜底也读 package.json 推 major。
+# 注: grep 加 || true, 否则 set -euo pipefail 下 grep 无匹配会让管道失败, 兜底永远走不到。
+LATEST=$( { grep "LATEST_MAJOR" "$HANFLOW_HOME_REPO/lib/versions.ts" 2>/dev/null || true; } | sed -nE "s|.*'([^']+)'.*|\1|p" | head -1)
+if [ -z "$LATEST" ]; then
+  # 兜底: 从 package.json version 推 major.x
+  PV=$(PKG="$HANFLOW_HOME_REPO/package.json" python -c "import json,os;print(json.load(open(os.environ['PKG'],encoding='utf-8')).get('version','1.0.0'))" 2>/dev/null || echo "1.0.0")
+  LATEST=$(printf '%s' "$PV" | sed -nE 's|^([0-9]+)\..*|\1|p')".x"
+fi
 
 # 0. 动态找 base 分支 (不写死 main, 兼容 fork 默认分支可能是 master)
 BASE_BRANCH=""

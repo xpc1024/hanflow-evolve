@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# home-sync.sh — submit 阶段: hanflow-home 单一 PR (S5名录 + S6文档 + 版本切换器)
+# home-sync.sh — submit 阶段: hanflow-home 单一 PR (S5名录 + S6文档 + 版本同步)
 #
 # 用法: home-sync.sh <hanflow_repo> <hanflow_home_repo> [new_version]
 #   new_version: S0.5 算的新版本号 (可选, 若提供则更新版本切换器)
@@ -132,26 +132,42 @@ else
   echo "  S5: contributors.json 已有 $CYCLE_ID (幂等跳过)"
 fi
 
-# ── 版本切换器更新 (若有 NEW_VERSION) ──
+# ── 版本同步 (大版本线模型, 若有 NEW_VERSION) ──
+# versions.ts 由 gen-versions.mjs 在 build 时生成, 这里不手写。
+# minor/patch: 只更新 package.json (LATEST_SEMVER 来源); 不建文件夹。
+# major: cp -r content/<旧major>.x/ → content/<新major>.x/。
 if [ -n "$NEW_VERSION" ]; then
-  VERSIONS_TS="$HANFLOW_HOME_REPO/lib/versions.ts"
-  # 检查是否已含此版本 (幂等)
-  if ! grep -q "'$NEW_VERSION'" "$VERSIONS_TS" 2>/dev/null; then
-    # 读旧 LATEST
-    OLD_LATEST=$(grep "LATEST_VERSION" "$VERSIONS_TS" | sed -nE "s|.*'([^']+)'.*|\1|p" | head -1)
-    # VERSIONS 数组加新版本
-    sed -i "s|VERSIONS = \[|VERSIONS = ['$NEW_VERSION', |" "$VERSIONS_TS"
-    # LATEST 更新
-    sed -i "s|LATEST_VERSION: Version = '[^']*'|LATEST_VERSION: Version = '$NEW_VERSION'|" "$VERSIONS_TS"
-    # cp -r 旧版本目录 → 新版本
-    if [ -d "$HANFLOW_HOME_REPO/content/$OLD_LATEST" ] && [ ! -d "$HANFLOW_HOME_REPO/content/$NEW_VERSION" ]; then
-      cp -r "$HANFLOW_HOME_REPO/content/$OLD_LATEST" "$HANFLOW_HOME_REPO/content/$NEW_VERSION"
-      echo "  版本: content/$NEW_VERSION 已创建 (从 $OLD_LATEST 复制)"
-    fi
-    echo "  版本: lib/versions.ts 已更新 LATEST=$NEW_VERSION"
+  NEW_MAJOR=$(printf '%s' "$NEW_VERSION" | sed -nE 's|^([0-9]+)\..*|\1|p')
+  NEW_LINE="${NEW_MAJOR}.x"
+  # 幂等: package.json version 已是 NEW_VERSION 则不改写 (避免重跑产生空 diff)
+  CUR_VER=$(PKG="$HANFLOW_HOME_REPO/package.json" python -c "import json,os;print(json.load(open(os.environ['PKG'],encoding='utf-8')).get('version',''))" 2>/dev/null || echo "")
+  if [ "$CUR_VER" != "$NEW_VERSION" ]; then
+    # package.json version = 精确 semver (gen-versions 从此读 LATEST_SEMVER)
+    # 单 handle + newline='\n' 保证 Windows 下统一 LF (避免 two-open 的 CRLF/LF 混杂)
+    PKG="$HANFLOW_HOME_REPO/package.json" VER="$NEW_VERSION" python -c "
+import json,os
+p=os.environ['PKG']
+d=json.load(open(p,encoding='utf-8')); d['version']=os.environ['VER']
+with open(p,'w',encoding='utf-8',newline='\n') as fh:
+    json.dump(d,fh,indent=2,ensure_ascii=False); fh.write('\n')
+"
+    echo "  版本: package.json -> v$NEW_VERSION"
   else
-    echo "  版本: $NEW_VERSION 已在 versions.ts (幂等跳过)"
+    echo "  版本: package.json 已是 v$NEW_VERSION (幂等跳过)"
   fi
+  # major bump: 新线不存在才 cp -r
+  if [ ! -d "$HANFLOW_HOME_REPO/content/$NEW_LINE" ]; then
+    PREV=$(ls -1 "$HANFLOW_HOME_REPO/content/" 2>/dev/null | grep -E '^[0-9]+\.x$' | sort -rV | head -1 || true)
+    if [ -n "$PREV" ]; then
+      cp -r "$HANFLOW_HOME_REPO/content/$PREV" "$HANFLOW_HOME_REPO/content/$NEW_LINE"
+      echo "  版本: major bump → content/$NEW_LINE 已创建 (从 $PREV 复制)"
+    else
+      echo "  WARN: 无旧线可复制, content/$NEW_LINE 需手动创建" >&2
+    fi
+  else
+    echo "  版本: minor/patch → 原地合并到 content/$NEW_LINE (不建文件夹)"
+  fi
+  echo "  版本: versions.ts 由 prebuild gen-versions.mjs 自动更新 (数据驱动)"
 fi
 
 # ── S6.2-S6.3 文档生成 (若 DOC_NEEDED=1, SKILL.md 指导 AI 对话式完成) ──
@@ -174,7 +190,9 @@ echo ""
 echo "=== home-sync 准备就绪 ==="
 echo "  分支: $HOME_BRANCH (在 $HANFLOW_HOME_REPO)"
 echo "  名录: contributors.json 已更新"
-[ -n "$NEW_VERSION" ] && echo "  版本: lib/versions.ts + content/$NEW_VERSION 已更新"
+if [ -n "$NEW_VERSION" ]; then
+  echo "  版本: package.json=v$NEW_VERSION content/$NEW_LINE (versions.ts 由 build 生成)"
+fi
 [ "$DOC_NEEDED" = "1" ] && echo "  文档: 待 AI 生成 + review 后 commit"
 echo ""
 echo "  下一步 (SKILL.md 指导):"

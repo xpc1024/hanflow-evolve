@@ -164,7 +164,7 @@ bash scripts/submit.sh <hanflow_repo> hanflow-home
 
 ---
 
-## home-sync: hanflow-home 单一 PR(S5名录 + S6文档 + 版本切换器)
+## home-sync: hanflow-home 单一 PR(S5名录 + S6文档 + 版本同步)
 
 submit 的最后阶段,合并发一个 PR 到 hanflow-home(spec 2026-07-29-doc-sync-s6-design.md)。
 
@@ -175,7 +175,7 @@ AI 读 `references/semver-rules.md`,根据 commit prefix + 公开 API 变更判�
 - `fix:`/`refactor:`/`docs:` → PATCH(1.0.X)
 - `BREAKING CHANGE`/`!` → MAJOR(X.0.0,警告暂停)
 
-结果 NEW_VERSION:S2 改框架 `__init__.py` + pyproject.toml;home-sync 改官网 `lib/versions.ts`。
+结果 NEW_VERSION:S2 改框架 `__init__.py` + pyproject.toml;home-sync 改官网 `package.json`(versions.ts 由 build 时 gen-versions.mjs 自动生成)。
 
 ### home-sync 执行
 
@@ -184,7 +184,7 @@ AI 读 `references/semver-rules.md`,根据 commit prefix + 公开 API 变更判�
 - S5 名录登记:追加 contributors.json(无条件,幂等)
 - S6.1 文档判断:doc-sync-judge.sh 匹配 doc-mapping.yaml
 - S6.2-S6.3(若 user-facing):AI 生成 zh+en 文档 → 贡献者 git diff review
-- 版本切换器(若有 NEW_VERSION):lib/versions.ts + content/<新版本>/
+- 版本同步(若有 NEW_VERSION):package.json + 大版本线(minor/patch 原地合并到 content/<major>.x/,major 才 cp -r 新线;versions.ts 数据驱动)
 - 发一个 PR:home/<cycle_id> 到 xpc1024/hanflow-home
 
 回填 state.submit.pr_home_url。

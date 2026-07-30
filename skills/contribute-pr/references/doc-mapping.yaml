@@ -1,6 +1,6 @@
 # 代码改动区域 → 文档映射 (S6 判断依据)
 # trigger_paths 用 glob 匹配 git diff 的文件路径
-# docs 路径的 <LATEST> 运行时从 lib/versions.ts LATEST_VERSION 替换
+# docs 路径的 <LATEST> 运行时从 lib/versions.ts LATEST_MAJOR (大版本线, 如 1.x) 替换
 # 新增模块时在此添加映射
 mappings:
   - id: cli
