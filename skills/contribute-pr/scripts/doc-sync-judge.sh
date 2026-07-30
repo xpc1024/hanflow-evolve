@@ -25,8 +25,18 @@ MAPPING_FILE="$SCRIPT_DIR/../references/doc-mapping.yaml"
 LATEST=$(grep "LATEST_VERSION" "$HANFLOW_HOME_REPO/lib/versions.ts" 2>/dev/null | sed -nE "s|.*'([^']+)'.*|\1|p" | head -1)
 [ -z "$LATEST" ] && LATEST="1.2.0"  # fallback
 
+# 0. 动态找 base 分支 (不写死 main, 兼容 fork 默认分支可能是 master)
+BASE_BRANCH=""
+for cand in upstream/main origin/main origin/master main master; do
+  if git -C "$HANFLOW_REPO" rev-parse --verify --quiet "refs/heads/$cand" >/dev/null 2>&1 || \
+     git -C "$HANFLOW_REPO" rev-parse --verify --quiet "refs/remotes/$cand" >/dev/null 2>&1; then
+    BASE_BRANCH="$cand"; break
+  fi
+done
+[ -z "$BASE_BRANCH" ] && { echo "DOC_NEEDED=0"; echo "MAPPINGS="; echo "DOCS_ZH="; echo "DOCS_EN="; exit 0; }
+
 # 1. 获取 diff 文件列表
-DIFF_FILES=$(git -C "$HANFLOW_REPO" diff --name-only "main..$BRANCH" 2>/dev/null || true)
+DIFF_FILES=$(git -C "$HANFLOW_REPO" diff --name-only "$BASE_BRANCH..$BRANCH" 2>/dev/null || true)
 [ -z "$DIFF_FILES" ] && { echo "DOC_NEEDED=0"; echo "MAPPINGS="; echo "DOCS_ZH="; echo "DOCS_EN="; exit 0; }
 
 # 2-7. python 做匹配逻辑 (glob + 最长优先 + ignore 排除 + <LATEST> 替换)
