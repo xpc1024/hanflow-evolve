@@ -22,11 +22,13 @@
 
 ### Task 1: 新增 gen-versions.mjs 版本生成器（hanflow-home）
 
-生成器扫描 `content/` 下 `<major>.x` 目录 + 读 `package.json`，产出 `lib/versions.ts` 的字面量。这是"不写死"的基石——客户端组件无法读文件系统，故在构建前生成字面量。
+生成器扫描 `content/` 下 `<major>.x` 目录 + 读 `package.json`，产出 `lib/versions.ts`。这是"不写死"的基石——客户端组件无法读文件系统，故在构建前生成字面量。
+
+> **本 Task 只创建生成器脚本本身，不接 `prebuild` 钩子。** 钩子延后到 Task 5（`content/1.x/` 建好、生成器首次能成功跑通时）再接，保证 Task 1 的提交不会让 `npm run build` 因"无 `<major>.x` 目录"而硬失败。
 
 **Files:**
 - Create: `E:\opensource\hanflow-home\scripts\gen-versions.mjs`
-- Modify: `E:\opensource\hanflow-home\package.json` (加 `prebuild` 钩子)
+- Modify: `E:\opensource\hanflow-home\package.json` (**不改**——`prebuild` 钩子在 Task 5 接)
 
 - [ ] **Step 1: 创建 gen-versions.mjs**
 
@@ -85,22 +87,9 @@ console.log(`[gen-versions] wrote lib/versions.ts: MAJOR_VERSIONS=[${majors.join
 
 > 说明：生成器只写文件头部的字面量区。`resolveVersion` 等手写函数放同一文件下半部分（Task 3 处理），生成器用 `writeFileSync` 整体覆盖——因此 Task 3 会把辅助函数**合并进生成器**输出，而非分两段。见 Task 3 Step 1 的完整实现。
 
-- [ ] **Step 2: 加 prebuild 钩子到 package.json**
+- [ ] **Step 2: 不接 prebuild 钩子（留到 Task 5）**
 
-把 `package.json` 的 `"scripts"` 改为（仅新增 `prebuild` 一行，其余不动）：
-
-```json
-"scripts": {
-  "dev": "next dev",
-  "prebuild": "node scripts/gen-versions.mjs",
-  "build": "next build",
-  "start": "next start",
-  "lint": "next lint",
-  "test": "vitest run",
-  "test:watch": "vitest",
-  "typecheck": "tsc --noEmit"
-}
-```
+`package.json` 在本 Task **不改动**。`prebuild` 钩子在 Task 5（content/1.x/ 就绪、生成器能成功跑通时）接入，避免本提交让 `npm run build` 因"无 `<major>.x` 目录"而硬失败。
 
 - [ ] **Step 3: 跑生成器验证输出**
 
@@ -112,8 +101,8 @@ Run: `cd /e/opensource/hanflow-home && node scripts/gen-versions.mjs`
 
 ```bash
 cd /e/opensource/hanflow-home
-git add scripts/gen-versions.mjs package.json
-git commit -m "build: add gen-versions.mjs to generate lib/versions.ts at prebuild"
+git add scripts/gen-versions.mjs
+git commit -m "build: add gen-versions.mjs to generate lib/versions.ts (hook wired in Task 5)"
 ```
 
 ---
@@ -348,11 +337,12 @@ git commit -m "test: adapt versions tests to major-line model"
 
 ### Task 5: 合并 content 四版本为 content/1.x/（hanflow-home）⭐ 线1收口
 
-把 `content/1.0.1/1.1.0/1.2.0/1.2.1` 合并为单一 `content/1.x/`，以 `1.2.1`（19 篇，超集）为基底；删除三个旧文件夹；跑通生成器；测试通过。
+把 `content/1.0.1/1.1.0/1.2.0/1.2.1` 合并为单一 `content/1.x/`，以 `1.2.1`（19 篇，超集）为基底；删除三个旧文件夹；跑通生成器；**接入 `prebuild` 钩子**（Task 1 延后到这里，因生成器首次能成功跑通）；测试通过。
 
 **Files:**
 - Create: `E:\opensource\hanflow-home\content\1.x\`（从 1.2.1 复制）
 - Delete: `content/1.0.1/`、`content/1.1.0/`、`content/1.2.0/`、`content/1.2.1/`
+- Modify: `E:\opensource\hanflow-home\package.json`（接入 `prebuild` 钩子）
 
 - [ ] **Step 1: 以 1.2.1 为基底创建 content/1.x/**
 
@@ -374,7 +364,24 @@ ls -1
 
 预期输出仅剩：`1.x`。
 
-- [ ] **Step 3: 跑生成器重写 lib/versions.ts（现在能通过）**
+- [ ] **Step 3: 跑生成器重写 lib/versions.ts（现在能通过）+ 接入 prebuild 钩子**
+
+先把 `package.json` 的 `prebuild` 钩子接入（Task 1 延后到此，因生成器现在首次能成功跑通）。scripts 块改为（新增 `prebuild` 一行，其余不动）：
+
+```json
+"scripts": {
+  "dev": "next dev",
+  "prebuild": "node scripts/gen-versions.mjs",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint",
+  "test": "vitest run",
+  "test:watch": "vitest",
+  "typecheck": "tsc --noEmit"
+}
+```
+
+然后跑生成器：
 
 Run: `cd /e/opensource/hanflow-home && node scripts/gen-versions.mjs`
 
