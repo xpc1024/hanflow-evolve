@@ -167,6 +167,13 @@ with open(p,'w',encoding='utf-8',newline='\n') as fh:
   else
     echo "  版本: minor/patch → 原地合并到 content/$NEW_LINE (不建文件夹)"
   fi
+  # 重跑生成器, 让提交进 PR 的 lib/versions.ts 与 package.json/content 一致
+  # (不跑完整 build, 仅 gen-versions; Vercel 部署时 prebuild 会再跑一遍)
+  if [ -f "$HANFLOW_HOME_REPO/scripts/gen-versions.mjs" ]; then
+    (cd "$HANFLOW_HOME_REPO" && node scripts/gen-versions.mjs) 2>/dev/null \
+      && echo "  版本: lib/versions.ts 已由 gen-versions.mjs 重新生成" \
+      || echo "  WARN: gen-versions.mjs 跑失败, lib/versions.ts 可能为旧值 (build 时会重跑)" >&2
+  fi
   echo "  版本: versions.ts 由 prebuild gen-versions.mjs 自动更新 (数据驱动)"
 fi
 
