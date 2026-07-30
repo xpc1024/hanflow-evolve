@@ -18,6 +18,11 @@ FORK_REMOTE="contribute-fork-home"
 UPSTREAM="xpc1024/hanflow-home"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# ── 前置: 目录存在性校验 ──
+[ -d "$HANFLOW_REPO" ] || { echo "ERROR: hanflow_repo not found: $HANFLOW_REPO" >&2; exit 1; }
+[ -d "$HANFLOW_HOME_REPO" ] || { echo "ERROR: hanflow_home_repo not found: $HANFLOW_HOME_REPO" >&2; exit 1; }
+[ -f "$STATE" ] || { echo "ERROR: state.yaml not found: $STATE" >&2; exit 1; }
+
 # ── S0. 校验 fork remote ──
 if ! git -C "$HANFLOW_HOME_REPO" remote get-url "$FORK_REMOTE" >/dev/null 2>&1; then
   echo "ERROR: remote '$FORK_REMOTE' 未配置在 $HANFLOW_HOME_REPO" >&2
