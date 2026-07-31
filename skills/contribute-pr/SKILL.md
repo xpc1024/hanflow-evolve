@@ -143,7 +143,7 @@ contribute-pr 的 `state-contribute.yaml` **字段名与 loop-evolve 的 state.y
 | code | 委托 | `skills/loop-evolve/references/code.md` |
 | verify | 委托 | `skills/loop-evolve/references/verify.md` |
 | gate3 | 委托(inline gate) | loop-evolve gate 行为 |
-| submit | **本 skill** | `references/submit.md`(含 S0 质量门 + S1-S4) |
+| submit | **本 skill** | `references/submit.md`(含 S0 质量门 + S0.5 版本判断 + S1-S6;S0.5 版本判断 + S5 名录登记**必做**,经 home-sync 合并发一个 hanflow-home PR) |
 
 ## 命令变体
 
@@ -180,17 +180,22 @@ contribute-pr 的 `state-contribute.yaml` **字段名与 loop-evolve 的 state.y
 - S0 用文档专用脚本(`pr-readiness-check-docs.sh`),不跑代码质量门
 - submit.sh 参数 `<repo>` 传 `hanflow-home`(PR 发到 xpc1024/hanflow-home)
 
-## S6 文档内容同步(submit 内自动)
+## S6 文档内容同步(submit 内自动)— home-sync 为必做
+
+> **home-sync 是 submit 的必做收尾**(不是可选)。即使本次非 user-facing(文档跳过),
+> 仍必须跑 S0.5 版本判断 + S5 名录登记。详见 `references/submit.md` 流程总览 ⚠️ 提示。
 
 submit 的 home-sync 阶段会自动判断是否需要更新官网文档(spec 2026-07-29-doc-sync-s6-design.md):
 
-1. **S0.5 版本判断**(S2 前):AI 读 `references/semver-rules.md` + commit/diff → BUMP_TYPE(major/minor/patch)+ NEW_VERSION
+1. **S0.5 版本判断**(S2 前,**必做**):AI 读 `references/semver-rules.md` + commit/diff → BUMP_TYPE(major/minor/patch)+ NEW_VERSION
    - MAJOR:警告暂停(社区贡献一般不 breaking)
+   - 任何 commit prefix 都要判断:`feat:`→MINOR,`fix:/build:/chore:/...`→PATCH
    - 结果传给 S2(改框架 `__init__.py`)+ home-sync(改官网 `lib/versions.ts`)
-2. **S6.1 文档判断**(home-sync 内):`doc-sync-judge.sh` 读代码 diff 匹配 `doc-mapping.yaml`
+2. **S5 名录登记**(home-sync 内,**无条件必做**):追加 contributors.json(无论是否 user-facing)
+3. **S6.1 文档判断**(home-sync 内,**条件**):`doc-sync-judge.sh` 读代码 diff 匹配 `doc-mapping.yaml`
    - 非 user-facing → 跳过文档
    - user-facing → AI 生成 zh+en 文档草稿 → 贡献者 git diff review
-3. **home-sync 合并 PR**:名录(contributors.json)+ 文档(若有)+ 版本切换器(若有)合并发一个 hanflow-home PR
+4. **home-sync 合并 PR**:名录(contributors.json)+ 文档(若有)+ 版本切换器(若有)合并发一个 hanflow-home PR
 
 **docs 子命令不 bump 版本**(文档修订不改变软件版本)。
 
@@ -215,7 +220,7 @@ submit 的 home-sync 阶段会自动判断是否需要更新官网文档(spec 20
 | submit.S3(P2) | `bash scripts/submit.sh <hanflow_repo> hanflow-home` |
 | submit.S4 | `bash scripts/write-contribution.sh <hanflow_repo>` + `bash scripts/refresh-status.sh <hanflow_repo>` |
 | submit.S0.5 | 版本判断(AI 读 semver-rules.md + commit/diff → BUMP_TYPE + NEW_VERSION;MAJOR 警告暂停) |
-| submit.home-sync | `bash scripts/home-sync.sh <hanflow_repo> <hanflow_home_repo> [new_version]`(S5名录+S6文档+版本切换器,合并一个 PR) |
+| submit.home-sync | `bash scripts/home-sync.sh <hanflow_repo> <hanflow_home_repo> [new_version]`(**必做**:S5 名录无条件登记 + S0.5 版本判断 + S6 文档(条件);合并一个 hanflow-home PR。**不得在 S4 后跳过**) |
 
 ## 凭证安全声明(启动时必须先打印,在请求任何输入之前)
 
