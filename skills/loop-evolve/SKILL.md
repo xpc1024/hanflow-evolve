@@ -29,6 +29,20 @@ description: 启动或恢复 hanflow 自主进化循环. 读取 hanflow-evolve/s
 - 残留锁 (PID 已死) 会被自动清除后重新获取, 无需人工干预
 - 活锁 (PID 仍活) → `exit 1` 并提示 "LOOP 已在运行 (PID N). 如需强制启动, 先删除 <lock>."
 
+## 启动强制拉取最新代码 (preflight-sync)
+
+加锁**之后**、读 state 路由**之前**,强制同步三仓库到最新 main,确保进化基于最新代码:
+
+```
+bash $EVOLVE_HOME/scripts/preflight-sync.sh loop
+```
+
+读 `config.yaml` 的 `paths:`(hanflow / hanflow_home / evolve_home)。**智能 WIP 保护**:仅当某仓库
+当前在 `main` 分支**且**工作区干净(无 tracked 未提交改动)时,才 `fetch <upstream>/main + reset --hard`。
+否则(在 `evolve/<cycle>` 分支或有未提交改动)**跳过该仓库并警告**,绝不毁掉进行中的周期工作。
+upstream remote 按候选 `upstream|github|origin` 取 URL 含 `xpc1024/<repo>` 的(复用 submit.sh 逻辑)。
+失败不阻断(离线可继续)。详见 `scripts/preflight-sync.sh`。
+
 ## 命令变体
 
 | 命令 | 行为 |

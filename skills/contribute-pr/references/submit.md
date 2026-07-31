@@ -65,6 +65,9 @@ S4. 归档与清理 ─── 写 CONTRIBUTIONS.md + 抹 token + state.phase=sub
 
 执行 `bash scripts/submit.sh <hanflow_repo> hanflow`:
 
+> 注:启动时的 `preflight-sync.sh contrib` 已把本地 main 同步到真正上游并把 main 推到 fork
+> (保证 fork 不滞后)。下面的 fork 同步检查作为**双重保险**保留(feature 分支 rebase 到最新 upstream/main)。
+
 1. **fork 同步检查**:fetch upstream main,若 fork 落后则 rebase(失败决策见 §8.1)
 2. **push 到 fork**:`git push contribute-fork evolve/$CYCLE_ID`
 3. **发 PR**:

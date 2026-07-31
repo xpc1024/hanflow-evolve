@@ -78,7 +78,21 @@ description: 面向无写权限的社区成员,复用 Hanflow 自进化体系(lo
 6. **获取并发锁**:`source scripts/acquire-lock.sh <hanflow_repo>`
    锁文件 `<hanflow_repo>/.contribute/lock`(与 loop-evolve 完全独立,可并行)。
 
-7. **进入对应阶段**,按阶段路由执行。
+7. **启动强制拉取最新代码(贡献模式)**:加锁**之后**、进阶段**之前**,把工作仓库同步到
+   真正主仓库(`xpc1024/<repo>`)的最新 main,并保证 fork 不滞后:
+
+   ```
+   bash scripts/preflight-sync.sh contrib <hanflow_repo> [hanflow_home_repo]
+   ```
+
+   - 拉取的是**真正上游**(按候选 `upstream|github|origin` 取 URL 含 `xpc1024/<repo>` 的 remote),
+     **不是 fork**;上游有滞后则合并进本地 main(ff-only 优先,分叉则 merge 保留 fork 独有提交)。
+   - 若配置了 fork remote(`contribute-fork` / `contribute-fork-home`),把同步后的 main 推到 fork,
+     保证 fork 不滞后;之后 feature 分支 `evolve/$CYCLE_ID` 正常开发/在 submit 时 rebase。
+   - docs 子命令需同时传 `<hanflow_home_repo>`。
+   - 失败不阻断(离线可继续)。详见 `scripts/preflight-sync.sh`。
+
+8. **进入对应阶段**,按阶段路由执行。
 
 ## 字段同构(委托跑通的前提,关键约束)
 
