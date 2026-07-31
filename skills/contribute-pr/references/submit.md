@@ -192,7 +192,7 @@ AI 读 `references/semver-rules.md`,根据 commit prefix + 公开 API 变更判�
 - `fix:`/`refactor:`/`docs:`/`build:`/`chore:`/`style:`/`perf:`/`test:`/`ci:` → PATCH(1.0.X)
 - `BREAKING CHANGE`/`!` → MAJOR(X.0.0,警告暂停)
 
-结果 NEW_VERSION:S2 改框架 `__init__.py` + pyproject.toml;home-sync 改官网 `package.json`(versions.ts 由 build 时 gen-versions.mjs 自动生成)。
+结果 NEW_VERSION:S2 改框架 `__init__.py` + pyproject.toml;home-sync 据此判断是否 major bump(建新 content 线)。
 
 ### home-sync 执行
 
@@ -201,7 +201,7 @@ AI 读 `references/semver-rules.md`,根据 commit prefix + 公开 API 变更判�
 - S5 名录登记:追加 contributors.json(无条件,幂等)
 - S6.1 文档判断:doc-sync-judge.sh 匹配 doc-mapping.yaml
 - S6.2-S6.3(若 user-facing):AI 生成 zh+en 文档 → 贡献者 git diff review
-- 版本同步(若有 NEW_VERSION):package.json + 大版本线(minor/patch 原地合并到 content/<major>.x/,major 才 cp -r 新线;versions.ts 数据驱动)
+- 版本同步(**无条件必做**):package.json 对齐 hanflow `__init__.py` 的**真实版本**(导航栏 LATEST_SEMVER 跟随它,不是 NEW_VERSION);NEW_VERSION 标 X.0.0 时才建新 content 线(major);minor/patch 原地合并到 content/<major>.x/。versions.ts 由 build 时 gen-versions.mjs 数据驱动生成
 - 发一个 PR:home/<cycle_id> 到 xpc1024/hanflow-home
 
 回填 state.submit.pr_home_url。

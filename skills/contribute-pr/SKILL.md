@@ -190,12 +190,13 @@ submit 的 home-sync 阶段会自动判断是否需要更新官网文档(spec 20
 1. **S0.5 版本判断**(S2 前,**必做**):AI 读 `references/semver-rules.md` + commit/diff → BUMP_TYPE(major/minor/patch)+ NEW_VERSION
    - MAJOR:警告暂停(社区贡献一般不 breaking)
    - 任何 commit prefix 都要判断:`feat:`→MINOR,`fix:/build:/chore:/...`→PATCH
-   - 结果传给 S2(改框架 `__init__.py`)+ home-sync(改官网 `lib/versions.ts`)
+   - 结果传给 S2(改框架 `__init__.py`)+ home-sync(NEW_VERSION 用于判断 major bump)
 2. **S5 名录登记**(home-sync 内,**无条件必做**):追加 contributors.json(无论是否 user-facing)
-3. **S6.1 文档判断**(home-sync 内,**条件**):`doc-sync-judge.sh` 读代码 diff 匹配 `doc-mapping.yaml`
+3. **版本对齐**(home-sync 内,**无条件必做**):把 hanflow-home `package.json` 对齐到 hanflow `__init__.py` 的真实版本(导航栏 LATEST_SEMVER 跟随它);NEW_VERSION 标 X.0.0 时才建新 content 线。versions.ts 由 build 时 gen-versions.mjs 数据驱动
+4. **S6.1 文档判断**(home-sync 内,**条件**):`doc-sync-judge.sh` 读代码 diff 匹配 `doc-mapping.yaml`
    - 非 user-facing → 跳过文档
    - user-facing → AI 生成 zh+en 文档草稿 → 贡献者 git diff review
-4. **home-sync 合并 PR**:名录(contributors.json)+ 文档(若有)+ 版本切换器(若有)合并发一个 hanflow-home PR
+5. **home-sync 合并 PR**:名录(contributors.json)+ 版本对齐 + 文档(若有)合并发一个 hanflow-home PR
 
 **docs 子命令不 bump 版本**(文档修订不改变软件版本)。
 
