@@ -6,12 +6,22 @@
 ## 流程总览
 
 ```
-S0. 就绪检查(质量门)─── 发 PR 前最后一道闸
-S1. 凭证与 fork 准备(首次才做)
-S2. 代码 PR(主,必做)── push 到 fork + gh pr create 到上游
-S3. 文档 PR(可选,第二站)── 仅 user-facing 变更才触发(P2,P0 跳过)
-S4. 归档与清理 ─── 写 CONTRIBUTIONS.md + 抹 token + state.phase=submitted
+S0.  就绪检查(质量门)─── 发 PR 前最后一道闸
+S0.5 版本判断 ─── 读 semver-rules.md + commit/diff → BUMP_TYPE + NEW_VERSION(MAJOR 警告暂停)
+S1.  凭证与 fork 准备(首次才做)
+S2.  代码 PR(主,必做)── push 到 fork + gh pr create 到上游
+S3.  文档 PR(可选)── 仅 user-facing 变更才触发(S6.1 判定 DOC_NEEDED)
+S4.  归档与清理 ─── 写 CONTRIBUTIONS.md + 抹 token + state.phase=submitted
+S5.  贡献者名录登记(无条件必做)── honor PR 到 hanflow-home,与 S6 合并发一个 home-sync PR
+S6.  文档 + 版本同步(条件)── DOC_NEEDED=1 才发文档;NEW_VERSION 非空才更新版本切换器
 ```
+
+> **⚠️ S0.5 版本判断与 S5 名录登记是 submit 的必做步骤,不是可选项。**
+> 即使本次无 user-facing 变更(S3/S6 文档跳过),仍必须:(1) 跑 S0.5 算 BUMP_TYPE 并改
+> `hanflow/__init__.py`(patch/minor);(2) 跑 S5 发名录 PR。执行者**不得在 S4 后直接置
+> `phase=submitted` 收尾**。下文的 home-sync 段是 S0.5 + S5 + S6 三步的**实现**,
+> 不是"可选增强"。历史教训:曾有纯 `build:`/`chore:` 贡献因整段跳过 home-sync,导致
+> 版本号未升级、contributors.json 未登记(见 hanflow-evolve LEARNINGS)。
 
 ---
 
@@ -167,7 +177,11 @@ bash scripts/submit.sh <hanflow_repo> hanflow-home
 
 ---
 
-## home-sync: hanflow-home 单一 PR(S5名录 + S6文档 + 版本同步)
+## home-sync: hanflow-home 单一 PR(S5名录 + S6文档 + 版本同步)— 必做
+
+> **本段是 submit 的必做收尾**(S0.5 + S5 + S6 三步的实现),不是可选增强。
+> S5 名录登记**无条件必做**;S0.5 版本判断对任何 commit prefix 都要跑(`build:`/`chore:`
+> 同样触发 PATCH)。详见流程总览段的 ⚠️ 提示。
 
 submit 的最后阶段,合并发一个 PR 到 hanflow-home(spec 2026-07-29-doc-sync-s6-design.md)。
 
@@ -175,7 +189,7 @@ submit 的最后阶段,合并发一个 PR 到 hanflow-home(spec 2026-07-29-doc-s
 
 AI 读 `references/semver-rules.md`,根据 commit prefix + 公开 API 变更判断 BUMP_TYPE:
 - `feat:` → MINOR(1.X.0)
-- `fix:`/`refactor:`/`docs:` → PATCH(1.0.X)
+- `fix:`/`refactor:`/`docs:`/`build:`/`chore:`/`style:`/`perf:`/`test:`/`ci:` → PATCH(1.0.X)
 - `BREAKING CHANGE`/`!` → MAJOR(X.0.0,警告暂停)
 
 结果 NEW_VERSION:S2 改框架 `__init__.py` + pyproject.toml;home-sync 改官网 `package.json`(versions.ts 由 build 时 gen-versions.mjs 自动生成)。
