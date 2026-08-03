@@ -75,3 +75,5 @@ expert_routing:
 - 派发方式: Agent 工具(general-purpose), **fresh context**(专家未参与设计/代码)
 - 派发前填占位符: `{PAYLOAD}`=被审对象(方向草案/设计草案/git diff),
   `{CONTEXT}`=direction 目标 + 影响模块, `{ROUTING}`=本周期 expert_routing 字段
+- **输出语言**: 每次派发的 prompt 末尾必须追加 "所有输出用中文"(subagent 默认可能切英文,
+  专家 prompt 文件虽是中文, 仍需显式约束, 见 SKILL.md 输出语言全局约束)
