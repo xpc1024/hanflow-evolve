@@ -87,3 +87,9 @@ learning:
 audit:
   max_retries: 2
   checklist_categories: [architecture, completeness, consistency, complexity, history]
+
+# ---- loop-evolve-max 专家配置 (向后兼容, loop-evolve/contribute-pr 不读) ----
+experts:
+  max_dispatch_budget_per_cycle: 30      # 单周期专家派发次数上限
+  max_dispatch_budget_per_phase: 8       # 单阶段上限
+  p6_review_mode: all_core              # P6 逐任务 review 模式: all_core(默认满血) / sampled / off
