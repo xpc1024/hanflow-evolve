@@ -593,6 +593,7 @@ contribute-pr 一键安装脚本
   --check           只做环境 + 仓库状态预检
   --update-skills   只更新 skill (hanflow-evolve git pull + 重装, Windows 用)
   --uninstall       移除已安装 skill (保留 hanflow 工作目录)
+  --install-max     单独装 loop-evolve-max 满血版 skill (维护者/尝鲜, 不进默认安装)
   -h, --help        显示本帮助
 
 环境变量:
