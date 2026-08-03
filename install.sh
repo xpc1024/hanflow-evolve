@@ -19,6 +19,7 @@
 #   bash install.sh --check                  # 只做环境 + 仓库状态预检, 不安装
 #   bash install.sh --update-skills          # 只更新 skill (hanflow-evolve git pull + 重装)
 #   bash install.sh --uninstall              # 移除已安装的 skill
+#   bash install.sh --install-max            # 单独装 loop-evolve-max 满血版 skill (维护者/尝鲜)
 #   bash install.sh -h|--help
 #
 # 仓库布局 (默认 ~/hanflow-dev/):
@@ -97,6 +98,7 @@ while [ $# -gt 0 ]; do
     --check)         ACTION="check" ; shift ;;
     --update-skills) ACTION="update_skills"; shift ;;
     --uninstall)     ACTION="uninstall"; shift ;;
+    --install-max)   ACTION="install_max"; shift ;;
     -h|--help)       ACTION="help"; shift ;;
     -*)              fail "未知选项: $1"; exit 1 ;;
     *)               GITHUB_USER="$1"; shift ;;  # 位置参数 = github 用户名
@@ -549,11 +551,35 @@ do_uninstall() {
   info "skill 已移除。hanflow 工作目录 $HANFLOW_DEV_DIR/hanflow 保留 (你写的代码在里面)。"
 }
 
+# ── 单独安装 loop-evolve-max (满血版, 维护者/尝鲜; 不进默认安装) ──
+do_install_max() {
+  info "===== loop-evolve-max (满血版) 安装 ====="
+  # 复用 do_install 的 clone 结果定位 evolve 源
+  local evolve_dest="$HANFLOW_DEV_DIR/hanflow-evolve"
+  if [ ! -d "$evolve_dest/skills/loop-evolve-max" ]; then
+    fail "loop-evolve-max 源不存在: $evolve_dest/skills/loop-evolve-max"
+    fail "请先 bash install.sh <github_user> 完成基础安装(clone evolve 仓库), 再跑 --install-max"
+    exit 1
+  fi
+  local all_dirs
+  all_dirs=$(all_skills_dirs)
+  [ -n "$all_dirs" ] || all_dirs="$SKILLS_DIR"
+  for skills_dir in $all_dirs; do
+    mkdir -p "$skills_dir"
+    install_skill "$evolve_dest/skills/loop-evolve-max" "$skills_dir/loop-evolve-max" "loop-evolve-max"
+    ok "loop-evolve-max 装到: $skills_dir"
+  done
+  echo ""
+  ok "安装完成。用法: /loop-evolve-max (详见 skill SKILL.md)"
+  warn "注意: max 是 loop-evolve 满血版, token 消耗显著更高(约 7×); 需 state-max.yaml, 首次跑 /loop-evolve-max init"
+}
+
 # ── 主入口 ──
 case "$ACTION" in
   install)       do_install ;;
   check)         check_env; exit $? ;;
   update_skills) do_update_skills ;;
+  install_max)   do_install_max ;;
   uninstall)     do_uninstall ;;
   help)
     cat <<EOF
