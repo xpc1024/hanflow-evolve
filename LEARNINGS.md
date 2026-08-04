@@ -209,7 +209,7 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 
 下一轮 cycle 选主题时的候选方向 (按当前已知信号排序; direction 阶段会重新计算):
 
-1. **[高] 在有 docker daemon 的环境实跑 DockerProvisioner 契约测试** —— 本 cycle (2026-W30-1.1.1) 4 个生命周期测试 skipif 跳过,真实 container create/exec/destroy 路径**未在 CI 验证**。下次有 daemon 时必须手跑(或加 GitHub Actions docker service)。
+1. ~~**[高] 在有 docker daemon 的环境实跑 DockerProvisioner 契约测试**~~ ✓ **已加固** (2026-W32-1.2.2)。原描述"CI 未验证真实容器路径"在 W31 后已过时 —— CI 实际已 `docker pull python:3.11-slim` + 跑全量, 最近一次 13/13 全 pass 含 4 个 lifecycle。W32 进一步加固可见性: 新增 `docker` marker + `make test-docker` + CI 拆分两步报告 + 镜像缺失 `::warning::` (消除假绿陷阱)。详见 cycle 2026-W32-1.2.2。
 2. **[高] LOOP 框架自身技术债批量修**(可选独立 cycle):
    - ~~`version-bump.sh` 路径 bug~~ ✓ 已修 (2026-W31-1.2.1)
    - `score-signals.py` Windows 路径 bug(LEARNINGS #6,3 个 cycle 都复现,仍未修)
