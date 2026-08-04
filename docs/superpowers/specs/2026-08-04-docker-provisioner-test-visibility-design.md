@@ -160,10 +160,12 @@ CI 退化路径:
 
 ## 错误处理
 
-- **测试自身错误** (provision/exec/destroy 失败): 不变, 测试断言失败即该 step 红。本设计不改测试逻辑。
-- **镜像缺失**: `::warning::` + docker step 显示 skipped, 不硬失败 (设计决策, 见上)。
-- **marker 未注册**: pyproject 同步注册, 不会有 unknown-marker warning。
-- **本机无 daemon**: `skip_no_docker` 原有 skip 逻辑保留, 行为不变。
+**与 HanflowError 层级的关系 (CHARTER §2 不变量 1)**: 本设计**零运行时改动**, 不新增、不修改、不捕获任何 `HanflowError` 子类。`DockerProvisioner` 运行时抛出的 `SandboxProvisionFailedError` / `SandboxDestroyFailedError` / `SandboxTimeoutError` / `SandboxDependencyMissingError` 全部保持不变, 它们的抛出路径、`code`、`retryable`、关联坐标 (run_id) 均不被本设计触碰。错误处理章节因此只描述**测试基建层面**的退化处理, 不涉及框架错误契约。
+
+- **测试自身错误** (provision/exec/destroy 失败): 不变, 测试断言失败即该 step 红。本设计不改测试逻辑, 已有的真实测试覆盖了 `SandboxTimeoutError` (test_exec_timeout_wrapped_as_sandbox_timeout) 等错误路径, 这些断言保持原样。
+- **镜像缺失 (缺口 A 的核心)**: `::warning::` + docker step 显示 skipped, 不硬失败 (设计决策: Docker Hub 限流是抖动, 硬失败会阻断所有无关 PR; 但 warning 让退化从静默变可见, 消除假绿)。这是**测试基建退化处理**, 非 HanflowError 范畴。
+- **marker 未注册**: pyproject 同步注册 `docker` marker, 不会有 unknown-marker warning (pytest 注册即合规)。
+- **本机无 daemon**: `skip_no_docker` (`_docker_available()` 返回 False) 原有 skip 逻辑保留, 行为不变。注意: 这里的 skip 是 pytest 机制, 不经过 HanflowError —— daemon 缺失是环境前置条件, 不是框架错误。
 
 ## 测试策略
 
