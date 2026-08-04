@@ -3,17 +3,23 @@
 #
 # 用法: version-bump.sh <evolve_home> <target_version>
 #
+# 版本唯一真相源 (single source of truth):
+#   hanflow/hanflow/__init__.py  __version__  ← 权威源
+#   下列 4 处 + state.yaml.current_version 均为它的派生, 由本脚本对齐:
+#
 # 4 个版本位置 (spec §5.1):
 #   1. hanflow/hanflow/__init__.py   __version__ = "x.y.z"   (权威源)
-#   2. hanflow/api/__init__.py       FastAPI(version="x.y.z", ...)
+#   2. hanflow/hanflow/api/__init__.py  FastAPI(version="x.y.z", ...)  (子包)
 #   3. hanflow/pyproject.toml        [project] version = "x.y.z"
 #   4. hanflow/web/package.json      { "version": "x.y.z" }
+#   + state.yaml.current_version     (release 成功后回写, 解冻原冻结字段)
 #
 # 行为:
 #   - 阻止降级 (target <= current 退出非 0, 原文件不动)
 #   - 更新 4 处版本号
 #   - 在 hanflow/CHANGELOG.md 顶部追加 (或创建) 新版本条目
 #   - 校验 4 处一致后退出 0
+#   - 把 evolve state.yaml.current_version 同步到 target (非阻断, 失败仅 WARN)
 #
 # Windows/MSYS 兼容:
 #   路径通过环境变量传给 Python, 不经 shell 字符串插值, 避免被 MSYS 路径转换破坏。
@@ -244,3 +250,37 @@ def main():
 
 main()
 PYEOF
+
+# ── 同步 state.yaml.current_version (解冻字段) ──────────────────────────────
+# 旧 bug: state.yaml.current_version 由 init 写一次后从不更新, 与权威源
+# __init__.py.__version__ 长期 drift, 导致 site-sync.sh 把滞后版本号写进官网。
+# release 成功后这里把它对齐到新 target (从 __init__.py 读 = target)。非阻断:
+# 失败仅 WARN,不影响 4 处版本对齐已成功的退出 0。
+#
+# state 文件优先从 config.yaml paths.evolve_home 读 (与 site-sync.sh 同源),
+# 退化到参数 evolve_home 自身的 state.yaml。write-state.sh 是本脚本的同级
+# (scripts/write-state.sh), 用 BASH_SOURCE 解析, 不依赖 evolve_home 里有 scripts/。
+SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WRITE_STATE="$SELF_DIR/write-state.sh"
+STATE_FILE=""
+EVOLVE_HOME_FROM_CONFIG=$(CONFIG_FILE="$CONFIG" python -c "
+import os, yaml
+try:
+    c = yaml.safe_load(open(os.environ['CONFIG_FILE'], encoding='utf-8'))
+    print(((c.get('paths') or {}).get('evolve_home') or '').strip())
+except Exception:
+    print('')
+" 2>/dev/null || echo "")
+for cand in "$EVOLVE_HOME_FROM_CONFIG/state.yaml" "$EVOLVE_HOME/state.yaml"; do
+  if [ -n "$cand" ] && [ -f "$cand" ]; then
+    STATE_FILE="$cand"
+    break
+  fi
+done
+if [ -n "$STATE_FILE" ] && [ -f "$WRITE_STATE" ]; then
+  if bash "$WRITE_STATE" "$STATE_FILE" current_version "\"$TARGET\"" >/dev/null 2>&1; then
+    echo "OK: state.yaml current_version -> $TARGET"
+  else
+    echo "WARN: 同步 state.yaml.current_version 失败 (4 处版本已对齐, 不阻断)" >&2
+  fi
+fi

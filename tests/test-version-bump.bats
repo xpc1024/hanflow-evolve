@@ -4,20 +4,26 @@ load 'test-helper'
 
 # setup: 在 BATS_TMPDIR 下搭一个 fake evolve_home + fake hanflow, 包含 4 个版本位置
 # 用本文件唯一子目录避免与其它 test 文件 (同样用 BATS_TMPDIR) 并发/串行时互相覆盖。
+#
+# 布局必须与真实 hanflow 仓库一致: api 是 hanflow 包的子包, 即
+#   $HANFLOW/hanflow/__init__.py        (包根, 权威版本源)
+#   $HANFLOW/hanflow/api/__init__.py    (子包, FastAPI version=)
+# 而非把 api 建成 hanflow 的兄弟目录 (那会让 version-bump.sh 的
+# $HANFLOW/hanflow/api/__init__.py 路径找不到文件而误报缺失)。
 setup() {
   BASE="$BATS_TMPDIR/vbump"
   EVOLVE="$BASE/evolve"
   HANFLOW="$BASE/hanflow"
   rm -rf "$EVOLVE" "$HANFLOW"
-  mkdir -p "$EVOLVE" "$HANFLOW/hanflow" "$HANFLOW/api" "$HANFLOW/web"
+  mkdir -p "$EVOLVE" "$HANFLOW/hanflow/api" "$HANFLOW/web"
 
   # 1) hanflow/__init__.py  (权威版本源)
   cat > "$HANFLOW/hanflow/__init__.py" <<'EOF'
 __version__ = "1.0.0"
 EOF
 
-  # 2) api/__init__.py  (FastAPI version=)
-  cat > "$HANFLOW/api/__init__.py" <<'EOF'
+  # 2) hanflow/api/__init__.py  (FastAPI version=, 子包)
+  cat > "$HANFLOW/hanflow/api/__init__.py" <<'EOF'
 from fastapi import FastAPI
 app = FastAPI(version="1.0.0", title="hanflow")
 EOF
@@ -55,7 +61,7 @@ EOF
   [ "$status" -eq 0 ]
 
   init_line=$(grep '__version__' "$HANFLOW/hanflow/__init__.py")
-  api_line=$(grep 'version=' "$HANFLOW/api/__init__.py")
+  api_line=$(grep 'version=' "$HANFLOW/hanflow/api/__init__.py")
   py_line=$(grep '^version' "$HANFLOW/pyproject.toml")
   pkg_line=$(grep '"version"' "$HANFLOW/web/package.json")
 
@@ -79,4 +85,21 @@ EOF
 
   # 原版本保持 1.0.0 不变
   grep '"1.0.0"' "$HANFLOW/hanflow/__init__.py"
+}
+
+# state.yaml.current_version 回写 (P1 解冻字段): release 成功后应同步到 target。
+# 旧 bug: current_version 由 init 写一次后从不更新, 与 __version__ 长期 drift。
+@test "writes back state.yaml.current_version to target on success" {
+  # 种一个 state.yaml (模拟 evolve_home 下真实存在的 state), config 已指向 $EVOLVE
+  cat > "$EVOLVE/state.yaml" <<'EOF'
+current_version: "1.0.0"
+phase: "release"
+EOF
+
+  run bash "$SCRIPTS_DIR/version-bump.sh" "$EVOLVE" "1.1.0"
+  [ "$status" -eq 0 ]
+
+  # state.yaml.current_version 应被同步到 target
+  cv_line=$(grep '^current_version:' "$EVOLVE/state.yaml" | head -1)
+  echo "$cv_line" | grep '"1.1.0"'
 }

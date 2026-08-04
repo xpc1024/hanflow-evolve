@@ -8,6 +8,10 @@ paths:
 
 versioning:
   baseline: "1.1.0"
+  # authoritative_source = 版本唯一真相源 (single source of truth)。
+  # 其余 4 处 (api/__init__.py, pyproject.toml, web/package.json,
+  # state.yaml.current_version) 均为它的派生, 由 version-bump.sh 在 release
+  # 时对齐 (align_on_release)。勿在它处手改版本号, 否则会触发 drift。
   authoritative_source: "hanflow/__init__.py"
   align_on_release: true
   conventional_commits: true
