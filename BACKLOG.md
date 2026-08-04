@@ -81,7 +81,12 @@
 
 > 已合并到 main 并 release 的主题。保留简短记录 (cycle_id / 版本 / 主题 / 日期)。
 
-(空)
+- `2026-W32-1.2.2` · v1.2.3 · docker-provisioner-real-contract-tests(human_override) · 2026-08-04
+  — DockerProvisioner 真实测试 CI 可见性加固: docker marker + make test-docker + CI 拆分报告 + 镜像缺失 ::warning:: (消除假绿陷阱) + tests/isolation/README。零运行时改动。P3 调研纠偏了 LEARNINGS #1 失效前提 (CI 实已验证真实容器路径)。
+- `2026-W31-1.2.1` · v1.2.1 · clear-preexisting-tech-debt-s0-gates(human_override) · 2026-07-29
+  — 清零 S0 三道门: ruff check 15→0 / ruff format 25 文件→clean / mypy 28→0; 集成贡献者 PR #5; 修 version-bump.sh 路径 bug。
+- `2026-W30-1.1.1` · v1.2.0 · docker-sandbox(human_override) · 2026-07-21
+  — DOCKER sandbox provisioner 落地(LocalProvisioner + DockerProvisioner + K8sProvisioner 占位 + build_sandbox 组合根)。
 
 ---
 

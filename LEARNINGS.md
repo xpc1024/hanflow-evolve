@@ -209,13 +209,13 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 
 下一轮 cycle 选主题时的候选方向 (按当前已知信号排序; direction 阶段会重新计算):
 
-1. ~~**[高] 在有 docker daemon 的环境实跑 DockerProvisioner 契约测试**~~ ✓ **已加固** (2026-W32-1.2.2)。原描述"CI 未验证真实容器路径"在 W31 后已过时 —— CI 实际已 `docker pull python:3.11-slim` + 跑全量, 最近一次 13/13 全 pass 含 4 个 lifecycle。W32 进一步加固可见性: 新增 `docker` marker + `make test-docker` + CI 拆分两步报告 + 镜像缺失 `::warning::` (消除假绿陷阱)。详见 cycle 2026-W32-1.2.2。
-2. **[高] LOOP 框架自身技术债批量修**(可选独立 cycle):
+1. **[高] 修 version-bump.sh: 同步 state.yaml.current_version** —— cycle 2026-W32 暴露的 LOOP 工具链 bug。version-bump.sh 只改 hanflow 4 处版本, 不更新 state.yaml.current_version; site-sync.sh 从 state 读 LATEST, 导致 hanflow-home 先被错同步到滞后版本 (1.2.1), 后手动修正。修复: version-bump.sh 末尾加 write-state.sh current_version。
+2. **[高] signal-gather 过滤已完成 LEARNINGS 条目** —— learnings-priority 主题 (BACKLOG 队首 score 44) 混入已完成项 (score-signals bug 已修、mypy 已恢复), 污染打分导致队首质量差。应识别 `~~删除线~~` 或 `✓ 已完成` 标记并跳过。
+3. **[高] LOOP 框架自身技术债批量修**(可选独立 cycle):
    - ~~`version-bump.sh` 路径 bug~~ ✓ 已修 (2026-W31-1.2.1)
-   - `score-signals.py` Windows 路径 bug(LEARNINGS #6,3 个 cycle 都复现,仍未修)
+   - ~~`score-signals.py` Windows 路径 bug~~ ✓ **已修** (2026-W32 核实)。脚本第 203-212 行已有 backslash 规范化 + 跨平台模块提取, BACKLOG 已正确按模块聚合 (不再是 stub-E:)。
    - smoke-test.sh 更全面自检
-3. **[高] site_sync 触发**:本周期 site_sync_needed=true(docker-sandbox 是 feature),但 release 阶段未实际触发 hanflow-home 重建。v1.1.0 + v1.2.0 都未同步,需要把 hanflow-home 同步跑一遍。
-4. ~~**[中] mypy 环境修复**:Python 3.13 + numpy stub 阻塞~~ ✓ 环境已自然恢复 (2026-W31-1.2.1),strict mypy 可跑,28 错已清零。
+4. ~~**[高] site_sync 触发**~~ ✓ **基本已清** (2026-W32): hanflow-home 已对齐到 1.2.3。
 5. **[中] DOCKER sandbox 的镜像构建流水线**:本 cycle 用预构建 `python:3.11-slim`,但用户需要带 hanflow runtime 的定制镜像(含 SDK/依赖)。下个 cycle 可以做。
 6. **[中] K8S sandbox 落地 (Phase 10)**:本 cycle 只占位 NotImplementedError。
 7. **[中] MCP remote transport 实现**(工具生态,2 个 cycle 都是 source_stub 高信号)。
@@ -223,6 +223,12 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 9. ~~DOCKER sandbox 落地~~ ✓ 已完成 (v1.2.0, 2026-W30-1.1.1)。
 10. ~~补齐 LLM 流式输出~~ ✓ 已完成 (v1.1.0, 2026-W29-1.0.2)。
 11. ~~CLI stub 逐个接通 SDK~~ ✓ 已完成 (v1.0.1, 2026-W29)。
-12. **[低] 引入 pytest-cov 建立覆盖率基线** (低成本, 为后续重构兜底)。
+12. ~~**[高] DockerProvisioner 真实测试**~~ ✓ **已加固** (v1.2.3, 2026-W32-1.2.2)。
+13. ~~**[中] mypy 环境修复**~~ ✓ 已恢复 (2026-W31-1.2.1)。
+14. **[低] 引入 pytest-cov 建立覆盖率基线** (低成本, 为后续重构兜底)。
+15. **[低] charter-check 正则优化**: 区分"影响模块"表的语义, 减少 ADR WARN 假阳性 (W32 direction/design 都误报)。
+16. **[低] gh release 权限**: 需 `gh auth refresh -h github.com -s workflow` 才能创建 GitHub Release (tag 已能推)。
+
+注意: prioritization 阶段会按 source_weights + theme_weights 重算, 此处仅作人读参考。
 
 注意: prioritization 阶段会按 source_weights + theme_weights 重算, 此处仅作人读参考。

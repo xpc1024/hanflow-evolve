@@ -13,6 +13,25 @@
 - 初始脚手架: 目录结构、config.yaml、state.yaml、LEARNINGS/BACKLOG/CHANGELOG 模板
   (Phase E0)。
 
+## cycle 2026-W32-1.2.2 (2026-08-04) — docker-provisioner-real-contract-tests
+
+完整跑通一个 evolve cycle, 产物全部落盘。本周期是 **hanflow 框架** 的 patch release
+(v1.2.3), 不含 LOOP 系统自身的代码改动, 但产出如下 LOOP 工件:
+
+### LOOP 工件
+- `cycles/2026-W32-1.2.2/`: signals.json / scored.json / direction.md / audit-direction.md /
+  design.md / audit-design.md / execution-plan.md / test-report.md / retro.md
+- `docs/superpowers/specs/`: direction + design 副本
+- `docs/superpowers/plans/`: execution-plan 副本
+
+### 发现的 LOOP 工具链问题 (待后续 cycle 修)
+- `version-bump.sh` 不同步 `state.yaml.current_version` → site-sync 读到滞后版本 (本周期
+  手动修正)。详见 retro.md "下次优先 #1"。
+- `signal-gather.sh` 不过滤已完成 LEARNINGS 条目 → BACKLOG 队首 learnings-priority 混入
+  已完成项。详见 retro.md "下次优先 #2"。
+- `charter-check --doc` 的"影响模块"正则误报 ADR WARN (本周期 direction/design 各 1 次
+  假阳性)。详见 retro.md "下次优先 #15"。
+
 ## 版本历史
 
 ### hanflow v1.2.1 (cycle 2026-W31-1.2.1, 2026-07-29) — 清零 S0 技术债门
