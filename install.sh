@@ -422,11 +422,11 @@ do_install() {
   fi
   for skills_dir in $all_dirs; do
     mkdir -p "$skills_dir"
-    for skill in contribute-pr loop-evolve; do
+    for skill in contribute-pr loop-evolve contribute-pr-en loop-evolve-en; do
       local src="$evolve_dest/skills/$skill"
       if [ ! -d "$src" ]; then
-        fail "skill 源不存在: $src"
-        exit 1
+        warn "skill 源不存在: $src (跳过; 可能是较旧分支无 -en 变体)"
+        continue
       fi
       install_skill "$src" "$skills_dir/$skill" "$skill"
     done
@@ -567,10 +567,14 @@ do_install_max() {
   for skills_dir in $all_dirs; do
     mkdir -p "$skills_dir"
     install_skill "$evolve_dest/skills/loop-evolve-max" "$skills_dir/loop-evolve-max" "loop-evolve-max"
-    ok "loop-evolve-max 装到: $skills_dir"
+    # max 的英文变体(若源存在; 较旧分支可能没有, 跳过)
+    if [ -d "$evolve_dest/skills/loop-evolve-max-en" ]; then
+      install_skill "$evolve_dest/skills/loop-evolve-max-en" "$skills_dir/loop-evolve-max-en" "loop-evolve-max-en"
+    fi
+    ok "loop-evolve-max (+ -en 变体) 装到: $skills_dir"
   done
   echo ""
-  ok "安装完成。用法: /loop-evolve-max (详见 skill SKILL.md)"
+  ok "安装完成。用法: /loop-evolve-max (中文, 详见 skill SKILL.md) 或 /loop-evolve-max-en (英文)"
   warn "注意: max 是 loop-evolve 满血版, token 消耗显著更高(约 7×); 需 state-max.yaml, 首次跑 /loop-evolve-max init"
 }
 

@@ -14,15 +14,11 @@ description: 启动或恢复 hanflow 自主进化循环(满血版, 内嵌领域�
 > 完全自有并内嵌 9 位领域专家。详见 spec:
 > `docs/superpowers/specs/2026-08-03-loop-evolve-max-design.md`
 
-## ⚠️ 输出语言(全局约束,所有阶段强制遵守)
+## 输出语言
 
-**所有面向用户的输出一律用中文**——包括:阶段进展汇报、Gate 确认提示、AskUserQuestion
-选项文案、状态摘要、错误报告。生成的文档(direction.md / design.md / audit-*.md /
-test-report.md / retro.md 等)正文用中文,代码标识符和既有英文术语保持原样。
-
-**派发专家 subagent 时,必须在 prompt 里显式追加一句**:"所有输出用中文"。
-专家 prompt 文件(`references/experts/*.md`)虽是中文,但 subagent 默认可能切英文,
-故每次派发都要带这句约束,确保专家产出也是中文。
+本 skill 语言中立——默认输出语言由用户级 `~/.zcode/AGENTS.md` 决定(默认中文)。
+派发专家 subagent 时,prompt 末尾追加的语言指令遵循当前会话默认(中文,见 AGENTS.md);
+若经 `-en` 变体(`/loop-evolve-max-en`)触发,则改为"Respond in English"。
 
 ## 启动逻辑
 
