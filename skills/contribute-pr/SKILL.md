@@ -96,8 +96,9 @@ description: 面向无写权限的社区成员,复用 Hanflow 自进化体系(lo
 
 ## 字段同构(委托跑通的前提,关键约束)
 
-contribute-pr 的 `state-contribute.yaml` **字段名与 loop-evolve 的 state.yaml 完全一致**
-(`cycle_id` / `phase` / `artifacts` / `gate_status` / `last_error` 等),仅文件名不同。
+contribute-pr 的 `.contribute/state.yaml` **字段名与 loop-evolve 的 state.yaml 完全一致**
+(`cycle_id` / `phase` / `artifacts` / `gate_status` / `last_error` 等),仅文件位置不同
+(位于贡献者 hanflow 仓库的 `.contribute/` 下)。
 语义区分通过**值的前缀**实现:
 
 - `cycle_id` 的值用 `contrib-` 前缀(如 `contrib-2026-W30-001`),loop-evolve 用
@@ -149,7 +150,7 @@ contribute-pr 的 `state-contribute.yaml` **字段名与 loop-evolve 的 state.y
 
 | 命令 | 行为 |
 |------|------|
-| `/contribute-pr` | 默认:读 state-contribute.yaml 继续当前阶段;无 state 则从 scan 开始 |
+| `/contribute-pr` | 默认:读 `.contribute/state.yaml` 继续当前阶段;无 state 则从 scan 开始 |
 | `/contribute-pr topic <描述>` | 跳过 scan/prioritize/check_occupied,贡献者指定主题,直接进 plan |
 | `/contribute-pr status` | 只读:打印当前 state + CONTRIBUTIONS.md 本机 open 记录 |
 | `/contribute-pr refresh` | 只刷新 CONTRIBUTIONS.md 的 open 记录状态(spec §5.4 触发点 3) |
@@ -250,8 +251,9 @@ submit 的 home-sync 阶段会自动判断是否需要更新官网文档(spec 20
 
 ## 关键约束
 
-- `state-contribute.yaml` 是本 skill 唯一状态真相源(字段同构 loop-evolve state.yaml,
-  文件独立),每次阶段转换用 `scripts/write-state.sh` 原子更新(传 state-contribute.yaml 路径)
+- `.contribute/state.yaml`(位于贡献者 hanflow 仓库的 `.contribute/` 下)是本 skill 唯一状态真相源
+  (字段同构 loop-evolve state.yaml, 文件独立),每次阶段转换用 `scripts/write-state.sh` 原子更新
+  (调用时第一个参数传 `$HANFLOW_REPO/.contribute/state.yaml` 路径)
 - Gate 阶段不自动推进,必须等用户 approve/revise/reject
 - 所有阶段产物落盘到 `contributions/<cycle_id>/`(不是 loop-evolve 的 `cycles/`)
 - **不污染** loop-evolve 资源:不写 state.yaml、不写 BACKLOG.md、不写 LEARNINGS.md

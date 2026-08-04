@@ -8,7 +8,7 @@ contribute-pr 在选题阶段的去重机制,防止贡献者与他人或历史�
 
 `scripts/check-occupied.sh` 在 **prioritize 之后、human_topic/plan 之前**(阶段 2.5)执行。
 
-- 输入:prioritize 产出的候选主题列表(从 state-contribute.yaml.artifacts 或 signals 读)
+- 输入:prioritize 产出的候选主题列表(从 .contribute/state.yaml.artifacts 或 signals 读)
 - 输出:每个候选的占用状态 + 总体建议(可进 plan / 有冲突需确认)
 
 ---

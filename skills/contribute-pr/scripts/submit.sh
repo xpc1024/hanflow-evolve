@@ -21,12 +21,20 @@ esac
 STATE="$HANFLOW_REPO/.contribute/state.yaml"
 [ -f "$STATE" ] || { echo "ERROR: state.yaml not found: $STATE" >&2; exit 1; }
 
-# skill 目录 (找 write-state.sh, 复用 loop-evolve 的)
+# skill 目录 (找 write-state.sh)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-WRITE_STATE="$SCRIPT_DIR/../loop-evolve/scripts/write-state.sh"
-# loop-evolve skill 可能没带 scripts/, 回退到 hanflow-evolve 仓库的
+# write-state.sh 解析顺序:
+#   1. contribute-pr/scripts/write-state.sh  (install.sh bundle 进来的本地副本, 优先)
+#   2. hanflow-evolve 仓库根的 scripts/write-state.sh  (symlink 安装 / 开发态可达)
+# 旧代码指向 skills/loop-evolve/scripts/write-state.sh, 该目录不存在
+# (loop-evolve skill 不带 scripts/), 导致 WRITE_STATE 恒空 → 走 sed fallback,
+# 而 sed fallback 不支持 submit.pr_code_url 这类嵌套 key, PR URL 回填静默失败。
+WRITE_STATE="$SCRIPT_DIR/write-state.sh"
 if [ ! -f "$WRITE_STATE" ]; then
-  WRITE_STATE=""  # 后面 fallback
+  WRITE_STATE="$SCRIPT_DIR/../../../scripts/write-state.sh"
+fi
+if [ ! -f "$WRITE_STATE" ]; then
+  WRITE_STATE=""  # 后面 inline fallback
 fi
 
 # 读 state (一次性, 走环境变量避免 MSYS 路径插值 bug)
@@ -54,15 +62,34 @@ FORK_REMOTE_NAME="contribute-fork"
 
 echo "=== submit.sh: repo=$REPO upstream=$UPSTREAM branch=$BRANCH ==="
 
-# 写 state 辅助 (优先 loop-evolve 的 write-state.sh, 回退内联 sed)
+# 写 state 辅助 (优先 write-state.sh; 回退内联实现, 支持嵌套 key)
 write_state() {
   local key="$1" val="$2"
   if [ -n "$WRITE_STATE" ] && [ -f "$WRITE_STATE" ]; then
     bash "$WRITE_STATE" "$STATE" "$key" "$val" || echo "WARN: write-state.sh 回填失败" >&2
   else
-    # 内联 fallback: 简单 sed 替换 (子表字段如 submit.pr_code_url)
-    if grep -q "^${key}:" "$STATE"; then
-      sed -i "s|^${key}:.*|${key}: ${val}|" "$STATE"
+    # 内联 fallback: 与 write-state.sh 同语义 (顶层 key 走 sed; 嵌套 key 走 python)。
+    # 仅在 bundle 与仓库根 write-state.sh 都缺失时 (离线/异常安装) 兜底。
+    if printf '%s' "$key" | grep -qv '\.'; then
+      if grep -q "^${key}:" "$STATE"; then
+        sed -i "s|^${key}:.*|${key}: ${val}|" "$STATE"
+      else
+        printf '%s: %s\n' "$key" "$val" >> "$STATE"
+      fi
+    else
+      WS_STATE="$STATE" WS_KEY="$key" WS_VAL="$val" python -c "
+import os, yaml
+p=os.environ['WS_STATE']; k=os.environ['WS_KEY']; v=yaml.safe_load(os.environ['WS_VAL'])
+d=yaml.safe_load(open(p,encoding='utf-8')) or {}
+parts=k.split('.'); c=d
+for seg in parts[:-1]:
+    nxt=c.get(seg)
+    if not isinstance(nxt,dict):
+        nxt={}; c[seg]=nxt
+    c=nxt
+c[parts[-1]]=v
+yaml.safe_dump(d,open(p,'w',encoding='utf-8'),allow_unicode=True,sort_keys=False,default_flow_style=False)
+"
     fi
   fi
 }

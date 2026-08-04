@@ -40,7 +40,7 @@ S6.  文档 + 版本同步(条件)── DOC_NEEDED=1 才发文档;NEW_VERSION �
 | 文档同步检查 | 若 user-facing 变更,确认文档 PR 同步发 | P0 跳过,P1 末或 P2 实现 |
 
 **结果处理**:
-- 全部通过 → `write-state.sh state-contribute.yaml submit.quality verified`,进入 S1
+- 全部通过 → `write-state.sh .contribute/state.yaml submit.quality verified`,进入 S1
 - 任一失败 → **回 code 阶段修复**,写 `phase=code` + `last_error`,不发出半成品 PR
   (贡献者怀疑 gate3 后代码状态,可手动重跑测试,但 S0 不自动跑)
 
@@ -48,7 +48,7 @@ S6.  文档 + 版本同步(条件)── DOC_NEEDED=1 才发文档;NEW_VERSION �
 
 ## S1. 凭证与 fork 准备(首次才做)
 
-**前置**:读 state-contribute.yaml,若 `submit.fork_remote` 已存在则跳过本步。
+**前置**:读 .contribute/state.yaml,若 `submit.fork_remote` 已存在则跳过本步。
 
 详细凭证处理见 `credential-handling.md`,此处仅骨架:
 
@@ -90,7 +90,7 @@ S6.  文档 + 版本同步(条件)── DOC_NEEDED=1 才发文档;NEW_VERSION �
    ```
 4. **幂等处理**:若 gh pr create 报"分支已有 PR",调 `gh pr list --head <branch>` 取已存在
    PR URL,**视为成功**(spec §8.1)
-5. **回填**:`write-state.sh state-contribute.yaml submit.pr_code_url <url>`
+5. **回填**:`write-state.sh .contribute/state.yaml submit.pr_code_url <url>`
 
 ### PR 描述模板(数据式,引用脚本真实输出)
 
@@ -171,8 +171,8 @@ bash scripts/submit.sh <hanflow_repo> hanflow-home
 
 4. **更新 state**:
    ```bash
-   write-state.sh state-contribute.yaml phase submitted
-   write-state.sh state-contribute.yaml submit.token_redacted true
+   write-state.sh .contribute/state.yaml phase submitted
+   write-state.sh .contribute/state.yaml submit.token_redacted true
    ```
 
 ---
