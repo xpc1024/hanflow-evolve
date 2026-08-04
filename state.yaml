@@ -3,9 +3,9 @@
 
 cycle_id: "2026-W32-1.2.2"
 current_version: "1.2.1"
-target_version: null
-target_theme: null
-phase: "human_topic"
+target_version: "1.2.3"
+target_theme: "docker-provisioner-real-contract-tests"
+phase: "plan"
 gate_status: "approved"
 retry_count: 0
 audit_retry_count: 0
