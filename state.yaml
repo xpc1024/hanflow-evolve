@@ -1,8 +1,8 @@
 cycle_id: 2026-W34-1.2.4
 current_version: 1.2.3
-target_version: null
-target_theme: null
-phase: prioritize
+target_version: 1.2.4
+target_theme: loop-toolchain-state-sync-and-signal-filter(human_override)
+phase: human_topic
 gate_status: approved
 retry_count: 0
 audit_retry_count: 0

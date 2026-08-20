@@ -2,7 +2,7 @@
 
 由 LOOP 的 signal + prioritization 阶段自动维护。每个候选**主题 (theme)** 是一个可独立交付的演进单元, 对应一个 release。
 
-> 自动生成于 2026-08-04T01:51:29+00:00 · 共 8 个候选主题 (cycle `2026-W32-1.2.2`)。
+> 自动生成于 2026-08-20T02:58:40+00:00 · 共 8 个候选主题 (cycle `2026-W34-1.2.4`)。
 
 > 排序: `[human_override]` 主题无条件优先; 其余按 prioritization 得分降序。
 
@@ -16,7 +16,7 @@
 
 - **theme_id**: `learnings-priority`
 - **source**: `learnings`
-- **member_signals**: `learning:1`, `learning:2`, `learning:3`, `learning:4`, `learning:5`, `learning:6`, `learning:7`, `learning:8`, `learning:9`, `learning:10`, `learning:11`, `learning:12`, `learning:13`, `learning:14`, `learning:15`
+- **member_signals**: `learning:1`, `learning:2`, `learning:3`, `learning:4`, `learning:5`, `learning:6`, `learning:7`, `learning:8`, `learning:9`, `learning:10`, `learning:11`, `learning:12`, `learning:13`, `learning:14`, `learning:15`, `learning:16`, `learning:17`, `learning:18`, `learning:19`
 
 ### [2] Complete source stubs in 'api' module · score 39 · patch · effort medium · risk low
 
@@ -81,12 +81,7 @@
 
 > 已合并到 main 并 release 的主题。保留简短记录 (cycle_id / 版本 / 主题 / 日期)。
 
-- `2026-W32-1.2.2` · v1.2.3 · docker-provisioner-real-contract-tests(human_override) · 2026-08-04
-  — DockerProvisioner 真实测试 CI 可见性加固: docker marker + make test-docker + CI 拆分报告 + 镜像缺失 ::warning:: (消除假绿陷阱) + tests/isolation/README。零运行时改动。P3 调研纠偏了 LEARNINGS #1 失效前提 (CI 实已验证真实容器路径)。
-- `2026-W31-1.2.1` · v1.2.1 · clear-preexisting-tech-debt-s0-gates(human_override) · 2026-07-29
-  — 清零 S0 三道门: ruff check 15→0 / ruff format 25 文件→clean / mypy 28→0; 集成贡献者 PR #5; 修 version-bump.sh 路径 bug。
-- `2026-W30-1.1.1` · v1.2.0 · docker-sandbox(human_override) · 2026-07-21
-  — DOCKER sandbox provisioner 落地(LocalProvisioner + DockerProvisioner + K8sProvisioner 占位 + build_sandbox 组合根)。
+(空)
 
 ---
 
