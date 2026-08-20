@@ -82,3 +82,12 @@ LEARNINGS「下次优先」#1/#2 记录的两个 LOOP 工具链问题,经本周�
 6. release 阶段决策:hanflow 零提交 → 跳过 hanflow version-bump/tag/
    github-sync Phase A 与 site-sync(版本不变,官网已对齐 1.2.3);evolve 仓库
    正常 commit + push + CHANGELOG-EVOLVE 记录。
+
+---
+
+## AUDIT 摘要 (P3b, 2026-08-20)
+
+- **整体: 通过 (0 严重 / 3 轻微)** — A/B/C/D/E 五类全 pass
+- charter-check WARN 判定**假阳性** (正则字面命中「影响模块」标题; 实际 hanflow 零架构改动, 无需 ADR)
+- 关键实证复核成立: 19 条 learning 中 8 条行首 `~~`, 过滤后预期 11; collect_learnings() 确无过滤; version-bump state 回写确已修+有测试
+- 遗留轻微建议 (后续阶段顺手处理): ① learning 编号双体系注记 (LEARNINGS 原生 1-16 vs signals 展开 1-19); ② LEARNINGS 段落清理时评估 #9-13 滞留已完成条目物理销账; ③ 行号引用偏差 ≤3 行校准

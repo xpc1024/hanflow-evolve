@@ -2,15 +2,15 @@ cycle_id: 2026-W34-1.2.4
 current_version: 1.2.3
 target_version: 1.2.4
 target_theme: loop-toolchain-state-sync-and-signal-filter(human_override)
-phase: audit_direction
-gate_status: approved
+phase: gate1
+gate_status: awaiting_user
 retry_count: 0
 audit_retry_count: 0
 started_at: 2026-08-20 02:57:49+00:00
 artifacts:
   signals: cycles/2026-W34-1.2.4/signals.json
   direction: cycles/2026-W34-1.2.4/direction.md
-  audit_direction: null
+  audit_direction: cycles/2026-W34-1.2.4/audit-direction.md
   design: null
   audit_design: null
   execution_plan: null
