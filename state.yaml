@@ -1,17 +1,14 @@
-# state.yaml — LOOP 唯一状态真相源 (spec §2.2)
-# 由 write-state.sh 原子更新, 请勿手动编辑
-
-cycle_id: "2026-W32-1.2.2"
-current_version: "1.2.3"
+cycle_id: 2026-W34-1.2.4
+current_version: 1.2.3
 target_version: null
 target_theme: null
-phase: "awaiting_next_cycle"
-gate_status: "approved"
+phase: prioritize
+gate_status: approved
 retry_count: 0
 audit_retry_count: 0
-started_at: "2026-08-04T00:00:00Z"
+started_at: 2026-08-20 02:57:49+00:00
 artifacts:
-  signals: null
+  signals: cycles/2026-W34-1.2.4/signals.json
   direction: null
   audit_direction: null
   design: null
@@ -19,15 +16,15 @@ artifacts:
   execution_plan: null
   test_report: null
 last_error: null
-last_cycle_completed: "2026-08-04"
+last_cycle_completed: '2026-08-04'
 last_reminded: null
 site_sync_needed: false
 revision_feedback: null
 pending_human_topic: null
-artifacts.signals: "cycles/2026-W32-1.2.2/signals.json"
-artifacts.direction: "cycles/2026-W32-1.2.2/direction.md"
-artifacts.design: "cycles/2026-W32-1.2.2/design.md"
-artifacts.test_report: "cycles/2026-W32-1.2.2/test-report.md"
-artifacts.audit_direction: "cycles/2026-W32-1.2.2/audit-direction.md"
-artifacts.audit_design: "cycles/2026-W32-1.2.2/audit-design.md"
-artifacts.execution_plan: "cycles/2026-W32-1.2.2/execution-plan.md"
+artifacts.signals: cycles/2026-W32-1.2.2/signals.json
+artifacts.direction: cycles/2026-W32-1.2.2/direction.md
+artifacts.design: cycles/2026-W32-1.2.2/design.md
+artifacts.test_report: cycles/2026-W32-1.2.2/test-report.md
+artifacts.audit_direction: cycles/2026-W32-1.2.2/audit-direction.md
+artifacts.audit_design: cycles/2026-W32-1.2.2/audit-design.md
+artifacts.execution_plan: cycles/2026-W32-1.2.2/execution-plan.md
