@@ -62,6 +62,9 @@ idx += 1
 
 ## 错误处理
 
+- **HanflowError 不适用**: 本周期改动对象为 hanflow-evolve 采集脚本
+  (bash+内嵌 python), 不在 hanflow 运行时内执行, 错误语义沿用脚本现有
+  约定(采集端宽松降级, 见下), 不引入 hanflow 异常体系。
 - LEARNINGS.md 缺失/无「下次优先」段: 现状返回 `[]`,行为不变(过滤逻辑在
   段内解析循环中,无段则不执行)
 - body 为空: 现状 continue,不变
