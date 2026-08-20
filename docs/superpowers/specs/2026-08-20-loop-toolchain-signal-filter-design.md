@@ -18,20 +18,23 @@ LEARNINGS.md ──collect_learnings()──▶ signals.json ──score-signals
 
 ## 组件分解
 
-| 组件 | 文件 | 改动类型 |
-|------|------|---------|
-| 采集过滤器 | scripts/signal-gather.sh `collect_learnings()` (L217-258) | 修改: +行首 `~~` 判定 |
-| 过滤测试 | tests/test-signal-gather.bats | 新增: 1 个 @test (3 类断言) |
-| 知识库销账 | LEARNINGS.md「下次优先」 | 修改: #1/#2 标完成, 清理滞留已完成子项 |
-| 自证重采 | cycles/2026-W34-1.2.4/signals.json | 重新生成 |
-| 回归确认 | tests/test-version-bump.bats (既有) | 仅运行, 零改动 |
+**执行顺序约束: 先重采、后销账**(销账会给 #1/#2 加行首 `~~`, 若先销账则
+重采结果为 9 条 ≠ 验收的 11 条; 正确顺序下重采基于销账前的 LEARNINGS 快照)。
+
+| 顺序 | 组件 | 文件 | 改动类型 |
+|------|------|------|---------|
+| 1 | 采集过滤器 | scripts/signal-gather.sh `collect_learnings()` (L217-258) | 修改: +行首 `~~` 判定 |
+| 2 | 过滤测试 | tests/test-signal-gather.bats | 新增: 1 个 @test (3 类断言) |
+| 3 | 自证重采 | cycles/2026-W34-1.2.4/signals.json | 重新生成 (此时 LEARNINGS 尚未销账, 预期 11 条) |
+| 4 | 知识库销账 | LEARNINGS.md「下次优先」 | 修改: #1/#2 标完成, 清理滞留已完成子项 (此后下周期 scan 它们亦被过滤) |
+| 5 | 回归确认 | tests/test-version-bump.bats (既有) | 仅运行, 零改动 |
 
 ## 接口契约
 
 `collect_learnings(learnings_file) -> list[signal]` 签名不变。行为变更:
 
 ```python
-# 现状 (signal-gather.sh L244-246):
+# 现状 (signal-gather.sh L245-248):
 body = lm.group(1).strip()
 if not body:
     continue
@@ -83,11 +86,13 @@ fixture(fake-evolve/LEARNINGS.md「下次优先」段, 5 条):
 5. ~~**[中] 旧账乙**~~ ✓ 已恢复            → 跳过
 ```
 
-断言(沿用现有用例的 env-var + python -c 风格):
-- learnings 信号总数 == 3(条目 3/4/5 中的 3、4)
+断言(沿用现有用例的 env-var + python -c 风格; config 要点:
+`signals.learnings: {enabled: true}` 且其他信号源全部关闭, 使 learnings
+计数即 signals 总数):
+- learnings 信号总数 == **2**(fixture 条目 3/4 两条待办保留)
 - 无任何信号 text 以 `~~` 开头
 - 边界条目(含「已修」字样者)在结果中
-- 保留条目 id 连续: learning:1, learning:2
+- 保留条目 id 连续重编号: learning:1, learning:2
 
 **回归**: 全量 `bats tests/` + `pytest tests/test-score-signals.py` +
 既有 `test-version-bump.bats`(覆盖 state 回写, direction 目标 4)。
@@ -114,3 +119,11 @@ fixture(fake-evolve/LEARNINGS.md「下次优先」段, 5 条):
 | 4. LEARNINGS #1/#2 销账 | 组件分解知识库销账行 |
 | 5. hanflow 零提交 | 架构定位(改动仅 evolve 侧) |
 | 6. release 不发空 tag | 无代码落点, release 阶段执行决策 |
+
+---
+
+## AUDIT 摘要 (P4b, 2026-08-20)
+
+- **round 1**: 需修订 (2 严重/2 轻微) — C 类自洽: 断言总数矛盾 (==3 应为 ==2)、销账与重采顺序矛盾 (先销账则 9≠11)
+- **修订后复核**: **通过 (0 严重 / 0 轻微)** — 4 处修订全部解决, A/B/C/D/E 五类全 pass
+- 关键实测校准: body 判定段 L245-248; 先重采(销账前快照, 19−8=11)后销账(下周期起 #1/#2 亦被过滤)
