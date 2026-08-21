@@ -2,7 +2,7 @@
 
 由 LOOP 的 signal + prioritization 阶段自动维护。每个候选**主题 (theme)** 是一个可独立交付的演进单元, 对应一个 release。
 
-> 自动生成于 2026-08-20T02:58:40+00:00 · 共 8 个候选主题 (cycle `2026-W34-1.2.4`)。
+> 自动生成于 2026-08-21T01:10:39+00:00 · 共 8 个候选主题 (cycle `2026-W34-1.2.4`)。
 
 > 排序: `[human_override]` 主题无条件优先; 其余按 prioritization 得分降序。
 
@@ -12,62 +12,55 @@
 
 > 按 prioritization 得分降序。标注 `[HUMAN]` 的条目为 human_override, 无条件优先。
 
-### [1] LOOP 工具链修复: version-bump 同步 state + signal 过滤已完成项 [HUMAN] · score 100 · patch · effort small · risk low
-
-- **theme_id**: `loop-toolchain-state-sync-and-signal-filter`
-- **affected_modules**: `evolve-scripts` (hanflow-evolve 仓库自身, hanflow 本体零改动)
-- **source**: `human_override`
-- **member_signals**: LEARNINGS 「下次优先」#1 (version-bump.sh 不同步 state.yaml.current_version, 曾致 site-sync 错同步到 1.2.1), #2 (signal-gather 不过滤已完成 LEARNINGS 条目, learnings-priority 主题被打分污染)
-
-### [2] Priorities from LEARNINGS.md · score 44 · minor · effort medium · risk low
+### [1] Priorities from LEARNINGS.md · score 44 · minor · effort medium · risk low
 
 - **theme_id**: `learnings-priority`
 - **source**: `learnings`
-- **member_signals**: `learning:1`, `learning:2`, `learning:3`, `learning:4`, `learning:5`, `learning:6`, `learning:7`, `learning:8`, `learning:9`, `learning:10`, `learning:11`, `learning:12`, `learning:13`, `learning:14`, `learning:15`, `learning:16`, `learning:17`, `learning:18`, `learning:19`
+- **member_signals**: `learning:1`, `learning:2`, `learning:3`, `learning:4`, `learning:5`, `learning:6`, `learning:7`, `learning:8`, `learning:9`, `learning:10`, `learning:11`
 
-### [3] Complete source stubs in 'api' module · score 39 · patch · effort medium · risk low
+### [2] Complete source stubs in 'api' module · score 39 · patch · effort medium · risk low
 
 - **theme_id**: `stub-api`
 - **affected_modules**: `api`
 - **source**: `source_stub`
 - **member_signals**: `stub:E:/opensource/hanflow\hanflow/api/routes/observe.py:4`, `stub:E:/opensource/hanflow\hanflow/api/routes/observe.py:48`
 
-### [4] Complete source stubs in 'memory' module · score 39 · patch · effort medium · risk low
+### [3] Complete source stubs in 'memory' module · score 39 · patch · effort medium · risk low
 
 - **theme_id**: `stub-memory`
 - **affected_modules**: `memory`
 - **source**: `source_stub`
 - **member_signals**: `stub:E:/opensource/hanflow\hanflow/memory/filesystem.py:5`
 
-### [5] Complete source stubs in 'tools' module · score 39 · patch · effort medium · risk low
+### [4] Complete source stubs in 'tools' module · score 39 · patch · effort medium · risk low
 
 - **theme_id**: `stub-tools`
 - **affected_modules**: `tools`
 - **source**: `source_stub`
 - **member_signals**: `stub:E:/opensource/hanflow\hanflow/tools/builtin/vector_search.py:42`, `stub:E:/opensource/hanflow\hanflow/tools/builtin/web_search.py:42`, `stub:E:/opensource/hanflow\hanflow/tools/transport.py:75`
 
-### [6] Complete source stubs in 'persistence' module · score 38 · patch · effort medium · risk low
+### [5] Complete source stubs in 'persistence' module · score 38 · patch · effort medium · risk low
 
 - **theme_id**: `stub-persistence`
 - **affected_modules**: `persistence`
 - **source**: `source_stub`
 - **member_signals**: `stub:E:/opensource/hanflow\hanflow/persistence/resume.py:9`, `stub:E:/opensource/hanflow\hanflow/persistence/checkpoint.py:83`, `stub:E:/opensource/hanflow\hanflow/persistence/checkpoint.py:86`, `stub:E:/opensource/hanflow\hanflow/persistence/checkpoint.py:89`, `stub:E:/opensource/hanflow\hanflow/persistence/resume.py:93`, `stub:E:/opensource/hanflow\hanflow/persistence/resume.py:96`
 
-### [7] Complete source stubs in 'isolation' module · score 37 · patch · effort medium · risk low
+### [6] Complete source stubs in 'isolation' module · score 37 · patch · effort medium · risk low
 
 - **theme_id**: `stub-isolation`
 - **affected_modules**: `isolation`
 - **source**: `source_stub`
 - **member_signals**: `stub:E:/opensource/hanflow\hanflow/isolation/sandbox.py:208`, `stub:E:/opensource/hanflow\hanflow/isolation/sandbox.py:214`, `stub:E:/opensource/hanflow\hanflow/isolation/sandbox.py:219`
 
-### [8] Complete source stubs in 'observability' module · score 37 · patch · effort medium · risk low
+### [7] Complete source stubs in 'observability' module · score 37 · patch · effort medium · risk low
 
 - **theme_id**: `stub-observability`
 - **affected_modules**: `observability`
 - **source**: `source_stub`
 - **member_signals**: `stub:E:/opensource/hanflow\hanflow/observability/provider.py:23`, `stub:E:/opensource/hanflow\hanflow/observability/provider.py:26`, `stub:E:/opensource/hanflow\hanflow/observability/trace.py:85`, `stub:E:/opensource/hanflow\hanflow/observability/trace.py:94`
 
-### [9] Complete source stubs in 'runtime' module · score 37 · patch · effort medium · risk low
+### [8] Complete source stubs in 'runtime' module · score 37 · patch · effort medium · risk low
 
 - **theme_id**: `stub-runtime`
 - **affected_modules**: `runtime`
