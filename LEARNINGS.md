@@ -209,8 +209,8 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 
 下一轮 cycle 选主题时的候选方向 (按当前已知信号排序; direction 阶段会重新计算):
 
-1. **[高] 修 version-bump.sh: 同步 state.yaml.current_version** —— cycle 2026-W32 暴露的 LOOP 工具链 bug。version-bump.sh 只改 hanflow 4 处版本, 不更新 state.yaml.current_version; site-sync.sh 从 state 读 LATEST, 导致 hanflow-home 先被错同步到滞后版本 (1.2.1), 后手动修正。修复: version-bump.sh 末尾加 write-state.sh current_version。
-2. **[高] signal-gather 过滤已完成 LEARNINGS 条目** —— learnings-priority 主题 (BACKLOG 队首 score 44) 混入已完成项 (score-signals bug 已修、mypy 已恢复), 污染打分导致队首质量差。应识别 `~~删除线~~` 或 `✓ 已完成` 标记并跳过。
+1. ~~**[高] 修 version-bump.sh: 同步 state.yaml.current_version**~~ ✓ **已核实已修** (2026-W34-1.2.4): version-bump.sh 末尾已有 write-state.sh 回写段 (release 后对齐 current_version), test-version-bump.bats 有覆盖用例, 本条为 LEARNINGS 滞后记录。
+2. ~~**[高] signal-gather 过滤已完成 LEARNINGS 条目**~~ ✓ **已完成** (2026-W34-1.2.4): collect_learnings() 行首 `~~` 判定跳过 + bats 边界用例; 重采自证 learnings 19→11。维护约定: 完成项行首划线 `~~...~~` (可加 ✓)。
 3. **[高] LOOP 框架自身技术债批量修**(可选独立 cycle):
    - ~~`version-bump.sh` 路径 bug~~ ✓ 已修 (2026-W31-1.2.1)
    - ~~`score-signals.py` Windows 路径 bug~~ ✓ **已修** (2026-W32 核实)。脚本第 203-212 行已有 backslash 规范化 + 跨平台模块提取, BACKLOG 已正确按模块聚合 (不再是 stub-E:)。
@@ -228,7 +228,5 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 14. **[低] 引入 pytest-cov 建立覆盖率基线** (低成本, 为后续重构兜底)。
 15. **[低] charter-check 正则优化**: 区分"影响模块"表的语义, 减少 ADR WARN 假阳性 (W32 direction/design 都误报)。
 16. **[低] gh release 权限**: 需 `gh auth refresh -h github.com -s workflow` 才能创建 GitHub Release (tag 已能推)。
-
-注意: prioritization 阶段会按 source_weights + theme_weights 重算, 此处仅作人读参考。
 
 注意: prioritization 阶段会按 source_weights + theme_weights 重算, 此处仅作人读参考。
