@@ -245,6 +245,9 @@ def collect_learnings(learnings_file):
         body = lm.group(1).strip()
         if not body:
             continue
+        # 行首删除线 = 已完成条目 (LEARNINGS 维护约定), 不采集亦不占信号编号
+        if body.startswith("~~"):
+            continue
         idx += 1
         signals.append({
             "id": f"learning:{idx}",
