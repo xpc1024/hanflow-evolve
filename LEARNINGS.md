@@ -185,7 +185,8 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 
 ## 有效做法
 
-(随 cycle 累积; 记录"做了且效果好"的具体做法。初始为空。)
+- [2026-W34-1.2.4] **核实先于计划**: P3 前实测两个"待修 bug" 现状, 发现 LEARNINGS #1 早已修复 (commit d18e9b9), 周期范围即时收敛避免重复劳动。LEARNINGS 条目可能滞后于代码, 动手前先 grep/git log 核实。
+- [2026-W34-1.2.4] **执行顺序约束写进 design**: "先重采 (销账前快照) 后销账" 作为组件分解表的显式前置声明, T3/T4 按序执行, 自证数字与验收精确一致。多步骤有数据依赖时, 顺序即契约。
 
 <!-- 示例格式:
 - [cycle 0001] 在 audit 阶段强制跑 `ruff` + `mypy` + pytest 全量, 0 警告才放行 →
@@ -196,7 +197,8 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 
 ## 失败教训
 
-(随 cycle 累积; 记录"做了但失败/被回退"的具体做法及根因。初始为空。)
+- [2026-W34-1.2.4] **ZCode Git Bash pty 下 bats 1.13.0 挂死**: `run` 任何非零退出子进程即挂 (最小复现: `run bash -c "exit 1"`; exit 0 正常)。全量 bats 首跑 17 分钟无输出。绕过: `cmd //c bats tests/`。非仓库问题, 环境恢复后可回归直跑。
+- [2026-W34-1.2.4] **裸 Python 3.13 环境门再次受阻** (W31 同款): 缺 zhipuai (1 个 glm stream 测试失败) + numpy stub `Type statement` 11 错挡住 mypy; `uv run` 需网络当时超时。**环境恢复后必须重跑 mypy --strict + 全量 pytest** (W31 教训重申)。
 
 <!-- 示例格式:
 - [cycle 0002] 尝试用裸 dataclass 替换 Pydantic 配置模型 → 与 ConfigDict/序列化
@@ -206,27 +208,24 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 ---
 
 ## 下次优先
-
 下一轮 cycle 选主题时的候选方向 (按当前已知信号排序; direction 阶段会重新计算):
 
-1. ~~**[高] 修 version-bump.sh: 同步 state.yaml.current_version**~~ ✓ **已核实已修** (2026-W34-1.2.4): version-bump.sh 末尾已有 write-state.sh 回写段 (release 后对齐 current_version), test-version-bump.bats 有覆盖用例, 本条为 LEARNINGS 滞后记录。
-2. ~~**[高] signal-gather 过滤已完成 LEARNINGS 条目**~~ ✓ **已完成** (2026-W34-1.2.4): collect_learnings() 行首 `~~` 判定跳过 + bats 边界用例; 重采自证 learnings 19→11。维护约定: 完成项行首划线 `~~...~~` (可加 ✓)。
-3. **[高] LOOP 框架自身技术债批量修**(可选独立 cycle):
-   - ~~`version-bump.sh` 路径 bug~~ ✓ 已修 (2026-W31-1.2.1)
-   - ~~`score-signals.py` Windows 路径 bug~~ ✓ **已修** (2026-W32 核实)。脚本第 203-212 行已有 backslash 规范化 + 跨平台模块提取, BACKLOG 已正确按模块聚合 (不再是 stub-E:)。
-   - smoke-test.sh 更全面自检
-4. ~~**[高] site_sync 触发**~~ ✓ **基本已清** (2026-W32): hanflow-home 已对齐到 1.2.3。
-5. **[中] DOCKER sandbox 的镜像构建流水线**:本 cycle 用预构建 `python:3.11-slim`,但用户需要带 hanflow runtime 的定制镜像(含 SDK/依赖)。下个 cycle 可以做。
-6. **[中] K8S sandbox 落地 (Phase 10)**:本 cycle 只占位 NotImplementedError。
-7. **[中] MCP remote transport 实现**(工具生态,2 个 cycle 都是 source_stub 高信号)。
-8. **[中] Group B 命令后端**(metrics/search/eval/datasets/worker)。
-9. ~~DOCKER sandbox 落地~~ ✓ 已完成 (v1.2.0, 2026-W30-1.1.1)。
-10. ~~补齐 LLM 流式输出~~ ✓ 已完成 (v1.1.0, 2026-W29-1.0.2)。
-11. ~~CLI stub 逐个接通 SDK~~ ✓ 已完成 (v1.0.1, 2026-W29)。
-12. ~~**[高] DockerProvisioner 真实测试**~~ ✓ **已加固** (v1.2.3, 2026-W32-1.2.2)。
-13. ~~**[中] mypy 环境修复**~~ ✓ 已恢复 (2026-W31-1.2.1)。
-14. **[低] 引入 pytest-cov 建立覆盖率基线** (低成本, 为后续重构兜底)。
-15. **[低] charter-check 正则优化**: 区分"影响模块"表的语义, 减少 ADR WARN 假阳性 (W32 direction/design 都误报)。
-16. **[低] gh release 权限**: 需 `gh auth refresh -h github.com -s workflow` 才能创建 GitHub Release (tag 已能推)。
+1. **[中] DOCKER sandbox 的镜像构建流水线**:本 cycle 用预构建 `python:3.11-slim`,但用户需要带 hanflow runtime 的定制镜像(含 SDK/依赖)。
+2. **[中] K8S sandbox 落地 (Phase 10)**:本 cycle 只占位 NotImplementedError。
+3. **[中] MCP remote transport 实现**(工具生态,2 个 cycle 都是 source_stub 高信号)。
+4. **[中] Group B 命令后端**(metrics/search/eval/datasets/worker)。
+5. **[低] 引入 pytest-cov 建立覆盖率基线** (低成本, 为后续重构兜底)。
+6. **[低] charter-check 正则优化**: 区分"影响模块"表的语义, 减少 ADR WARN 假阳性 (W32 + W34 direction 都误报)。
+7. **[低] gh release 权限**: 需 `gh auth refresh -h github.com -s workflow` 才能创建 GitHub Release (tag 已能推)。
+8. **[低] score-signals 打分与条数解耦问题**: learnings member_score 固定 40, 过滤僵尸条目后主题分数不降 (W34 观察), "队首虚高"另一半根因在权重结构。
+9. **[中] update-backlog.sh 清空 Done 段缺陷**: 脚本全量重生成 BACKLOG 时抹掉 Done 历史 (W34 实证, 已手动恢复), 应改为保留/合并 Done 段。
+10. **[环境] ZCode 会话 bats 挂死 + python 缺依赖** (见失败教训): 环境恢复后重跑全量门。
+
+已完成 (近期, 行首划线, 采集端自动过滤):
+- ~~**[高] 修 version-bump.sh: 同步 state.yaml.current_version**~~ ✓ 已核实已修 (2026-W34-1.2.4)。
+- ~~**[高] signal-gather 过滤已完成 LEARNINGS 条目**~~ ✓ 已完成 (2026-W34-1.2.4): 行首 `~~` 过滤 + bats 边界用例, learnings 19→11。
+- ~~**[高] DockerProvisioner 真实测试**~~ ✓ 已加固 (v1.2.3, 2026-W32-1.2.2)。
+- ~~**[中] mypy 环境修复**~~ ✓ 已恢复 (2026-W31-1.2.1)。
+- ~~DOCKER sandbox 落地~~ ✓ (v1.2.0) · ~~补齐 LLM 流式输出~~ ✓ (v1.1.0) · ~~CLI stub 接通~~ ✓ (v1.0.1) · ~~site_sync 触发~~ ✓ (2026-W32)。
 
 注意: prioritization 阶段会按 source_weights + theme_weights 重算, 此处仅作人读参考。

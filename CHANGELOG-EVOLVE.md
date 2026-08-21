@@ -13,6 +13,31 @@
 - 初始脚手架: 目录结构、config.yaml、state.yaml、LEARNINGS/BACKLOG/CHANGELOG 模板
   (Phase E0)。
 
+## cycle 2026-W34-1.2.4 (2026-08-20) — loop-toolchain-state-sync-and-signal-filter
+
+**evolve-only 周期** (hanflow 零改动, 不发空 tag, v1.2.3 保持)。修复 W32 发现的
+LOOP 工具链两问题 + 顺带核实销账:
+
+### Fixed
+- `signal-gather.sh` `collect_learnings()` 行首 `~~` 过滤: 已完成 LEARNINGS 条目
+  不再采集 (TDD 红→绿; learnings 19→11, 下周期起队首成员净化)。
+- LEARNINGS「下次优先」#1 (version-bump state 同步) 核实**早已修复** (d18e9b9),
+  销账; #2 (本条) 完成。
+
+### Added
+- `tests/test-signal-gather.bats`: 过滤用例 (3 类断言, 含"正文提及已修但行首无
+  划线"边界不误杀)。
+
+### 发现的新工具链问题 (待后续 cycle)
+- `update-backlog.sh` 重跑会**清空 BACKLOG Done 段** (Done 记录仅活在 learn 手动
+  维护后、下次重跑前的窗口; 本次已从会话上下文恢复 W30-W34 四条记录)。
+- `score-signals` member_score 与条数解耦, 过滤僵尸条目后主题分数不降。
+
+### LOOP 工件
+- `cycles/2026-W34-1.2.4/`: signals.json / scored.json / direction.md /
+  audit-direction.md / design.md / audit-design.md / execution-plan.md /
+  test-report.md / retro.md; specs/plans 副本。
+
 ## cycle 2026-W32-1.2.2 (2026-08-04) — docker-provisioner-real-contract-tests
 
 完整跑通一个 evolve cycle, 产物全部落盘。本周期是 **hanflow 框架** 的 patch release
