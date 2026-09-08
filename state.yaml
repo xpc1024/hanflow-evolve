@@ -1,15 +1,15 @@
 cycle_id: 2026-W37-1.3.0
 current_version: 1.2.3
-target_version: "1.3.0"
-target_theme: "learnings-priority"
-phase: plan
+target_version: 1.3.0
+target_theme: learnings-priority
+phase: audit_direction
 gate_status: approved
 retry_count: 0
 audit_retry_count: 0
 started_at: '2026-09-08 01:22:21+00:00'
 artifacts:
   signals: cycles/2026-W37-1.3.0/signals.json
-  direction: cycles/2026-W34-1.2.4/direction.md
+  direction: cycles/2026-W37-1.3.0/direction.md
   audit_direction: cycles/2026-W34-1.2.4/audit-direction.md
   design: cycles/2026-W34-1.2.4/design.md
   audit_design: cycles/2026-W34-1.2.4/audit-design.md
