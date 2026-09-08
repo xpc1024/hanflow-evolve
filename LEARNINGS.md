@@ -212,16 +212,17 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 
 1. **[中] DOCKER sandbox 的镜像构建流水线**:本 cycle 用预构建 `python:3.11-slim`,但用户需要带 hanflow runtime 的定制镜像(含 SDK/依赖)。
 2. **[中] K8S sandbox 落地 (Phase 10)**:本 cycle 只占位 NotImplementedError。
-3. **[中] MCP remote transport 实现**(工具生态,2 个 cycle 都是 source_stub 高信号)。
-4. **[中] Group B 命令后端**(metrics/search/eval/datasets/worker)。
-5. **[低] 引入 pytest-cov 建立覆盖率基线** (低成本, 为后续重构兜底)。
-6. **[低] charter-check 正则优化**: 区分"影响模块"表的语义, 减少 ADR WARN 假阳性 (W32 + W34 direction 都误报)。
-7. **[低] gh release 权限**: 需 `gh auth refresh -h github.com -s workflow` 才能创建 GitHub Release (tag 已能推)。
-8. **[低] score-signals 打分与条数解耦问题**: learnings member_score 固定 40, 过滤僵尸条目后主题分数不降 (W34 观察), "队首虚高"另一半根因在权重结构。
-9. **[中] update-backlog.sh 清空 Done 段缺陷**: 脚本全量重生成 BACKLOG 时抹掉 Done 历史 (W34 实证, 已手动恢复), 应改为保留/合并 Done 段。
-10. **[环境] ZCode 会话 bats 挂死 + python 缺依赖** (见失败教训): 环境恢复后重跑全量门。
+3. **[中] Group B 命令后端**(metrics/search/eval/datasets/worker)。
+4. **[低] charter-check 正则优化**: 区分"影响模块"表的语义, 减少 ADR WARN 假阳性 (W32 + W34 + W37 direction 都误报)。
+5. **[低] gh release 权限**: 需 `gh auth refresh -h github.com -s workflow` 才能创建 GitHub Release (tag 已能推)。
+6. **[低] score-signals 打分与条数解耦问题**: learnings member_score 固定 40, 过滤僵尸条目后主题分数不降 (W34 观察), "队首虚高"另一半根因在权重结构。
+7. **[低] remote list_tools 结果缓存**: bus._find_tool 每次 tool_call 全量 list_tools(), http 传输每次调用多一 RTT; connection 层缓存候选 (2026-W37 design §9 记账)。
+8. **[环境] ZCode 会话 bats 挂死 + python 缺依赖** (见失败教训): 环境恢复后重跑全量门。
 
 已完成 (近期, 行首划线, 采集端自动过滤):
+- ~~**[中] MCP remote transport 实现**~~ ✓ 已完成 (v1.3.0, 2026-W37-1.3.0): mcp SDK v2 三传输 (stdio/http/sse) 真实化 + WS 显式占位 + bus _external 接线 + pyjwt override (ADR-0008)。
+- ~~**[中] update-backlog.sh 清空 Done 段缺陷**~~ ✓ 已修复 (2026-W37-1.3.0): _extract_done_entries 保留历史 + 4 用例 bats 红→绿, W37 P2 复现即修。
+- ~~**[低] 引入 pytest-cov 建立覆盖率基线**~~ ✓ 核实早已修复 (2026-W37 P3): dev 组 `pytest-cov>=4.0` + [tool.coverage] 配置齐全, LEARNINGS 滞后条目。
 - ~~**[高] 修 version-bump.sh: 同步 state.yaml.current_version**~~ ✓ 已核实已修 (2026-W34-1.2.4)。
 - ~~**[高] signal-gather 过滤已完成 LEARNINGS 条目**~~ ✓ 已完成 (2026-W34-1.2.4): 行首 `~~` 过滤 + bats 边界用例, learnings 19→11。
 - ~~**[高] DockerProvisioner 真实测试**~~ ✓ 已加固 (v1.2.3, 2026-W32-1.2.2)。
