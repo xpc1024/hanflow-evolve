@@ -48,6 +48,32 @@ def now_utc_iso() -> str:
     return datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
 
 
+def _extract_done_entries(backlog_path: str) -> list[str]:
+    """提取现有 BACKLOG Done 段的历史条目 (全量重生成前调用)。
+
+    W34/W37 两周期实证: 重生成硬编码 "(空)" 会抹掉 Done 历史。此处逐行保留
+    条目原文; 排除段标题、'>' 说明行、"(空)" 占位、空行与 "---" 分隔线。
+    文件不存在时返回空列表。
+    """
+    if not os.path.isfile(backlog_path):
+        return []
+    entries: list[str] = []
+    in_done = False
+    with open(backlog_path, encoding="utf-8") as fh:
+        for raw_line in fh:
+            line = raw_line.rstrip("\n")
+            if line.startswith("## "):
+                in_done = line.startswith("## 已完成")
+                continue
+            if not in_done:
+                continue
+            stripped = line.strip()
+            if not stripped or stripped == "(空)" or stripped == "---" or stripped.startswith(">"):
+                continue
+            entries.append(line)
+    return entries
+
+
 def render_backlog(scored_path: str, backlog_path: str) -> None:
     with open(scored_path, encoding="utf-8") as fh:
         data = json.load(fh)
@@ -143,7 +169,11 @@ def render_backlog(scored_path: str, backlog_path: str) -> None:
         "(cycle_id / 版本 / 主题 / 日期)。"
     )
     lines.append("")
-    lines.append("(空)")
+    done_entries = _extract_done_entries(backlog_path)
+    if done_entries:
+        lines.extend(done_entries)
+    else:
+        lines.append("(空)")
     lines.append("")
     lines.append("---")
     lines.append("")
