@@ -2,9 +2,8 @@ cycle_id: 2026-W37-1.3.0
 current_version: 1.2.3
 target_version: 1.3.0
 target_theme: learnings-priority
-phase: audit_design
-gate_status: 'approved (auto: user unresponsive, direction passed 2-round audit; halt
-  enforced at gate3/release)'
+phase: plan_exec
+gate_status: approved-auto-gate1-gate2 (user unresponsive, both docs passed 2-round audit, hard stop enforced at gate3/release)
 retry_count: 0
 audit_retry_count: 0
 started_at: '2026-09-08 01:22:21+00:00'
@@ -29,3 +28,4 @@ artifacts.test_report: cycles/2026-W32-1.2.2/test-report.md
 artifacts.audit_direction: cycles/2026-W32-1.2.2/audit-direction.md
 artifacts.audit_design: cycles/2026-W32-1.2.2/audit-design.md
 artifacts.execution_plan: cycles/2026-W32-1.2.2/execution-plan.md
+last_written: null
