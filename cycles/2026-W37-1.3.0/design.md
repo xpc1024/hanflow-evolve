@@ -15,7 +15,9 @@
 | sse | `mcp.client.sse.sse_client(url, headers=None, timeout=5.0, sse_read_timeout=300.0, ..., auth=None)` → async ctx mgr(yield 形状 v1 为三元组,统一按下标取前二) |
 | session | `ClientSession(read, write, read_timeout_seconds=None)` async ctx mgr;进入后**必须先 `await initialize()`**;`list_tools()→ListToolsResult(tools=[Tool{name,title?,description,input_schema,output_schema?}])`;`call_tool(name, arguments=...)→CallToolResult{content, structured_content, is_error, ...}`;**无 close 方法**(退出 ctx 即关) |
 | 异常 | `McpError` 已不在 `mcp.shared.exceptions`;错误散布 `ErrorData`/`StreamableHTTPError`/`JSONRPCError` 等 → **包装策略不依赖 SDK 异常类型**,统一 `except Exception` 外圈(契约稳定) |
+| 会话/重连 | 会话头**仍在**:`MCP_SESSION_ID = "mcp-session-id"`(协议版本头 `mcp-protocol-version` 并存);resumption/reconnect 逻辑由 `streamable_http` transport 层自动管理,hanflow 侧无需干预(记入 ADR-0008) |
 | websocket | v2 无 WS 客户端传输(协议规范亦无)→ 保持占位 |
+| timeout 参数 | `ClientSession(read_timeout_seconds: float \| None)` — 实测为 float,int 传入兼容,mypy strict 无需 timedelta 转换 |
 
 ## 1. 架构定位
 
@@ -46,10 +48,15 @@ class _RemoteConnection:
     def __init__(self, config: MCPServerConfig) -> None:
         self.config = config
         self._stack: AsyncExitStack | None = None
-        self._session: Any = None          # mcp ClientSession;SDK 类型经 Any 边界(LEARNINGS 先例)
+        # SDK 类型精确注解: TYPE_CHECKING 导入 ClientSession, 运行时零 import
+        # (保留 "SDK 缺失可降级" 的宽松性, mcp 虽为主依赖但不强制模块级硬依赖)
+        self._session: ClientSession | None = None
         self._healthy: bool = False
 
     async def connect(self, config: MCPServerConfig) -> None:
+        """``config`` 参数仅为协议兼容, 实现以 ``self.config`` 为准 (docstring 声明)。
+        语义约定: 未 close 的重复 connect 未定义 (bus 每连接只 connect 一次)。
+        """
         self._validate_config()                        # 子类校验 → MCPConfigError (不吞)
         stack = AsyncExitStack()
         try:
@@ -60,8 +67,10 @@ class _RemoteConnection:
             )
             await self._session.initialize()           # MCP 握手
         except HanflowError:
+            self._session = None                       # 失败不残留已关闭 session 引用
             await stack.aclose(); raise
         except Exception as exc:
+            self._session = None
             await stack.aclose()
             self._healthy = False
             raise MCPConnectionError(
@@ -73,7 +82,10 @@ class _RemoteConnection:
 
 - `list_tools()`: `session.list_tools()` → 每个 SDK `Tool` 适配为
   `ToolDescriptor(name=t.name, server=self.config.name or "", description=t.description or "",
-  input_schema=t.input_schema, output_schema=t.output_schema)`。未连接 → `MCPConnectionError`。
+  input_schema=t.input_schema, output_schema=t.output_schema)`;
+  **annotations 最小映射**:`t.annotations.destructive_hint is True →
+  annotations={"destructive": True}`(bus 重试豁免语义依赖此键),其余 hint 本周期不映射。
+  未连接 → `MCPConnectionError`。
 - `call_tool()`: `session.call_tool(name, arguments=args)`;`result.is_error=True` →
   `ToolExecutionError`(消息含工具名 + content 文本摘要);否则返回
   `result.structured_content if not None else result.content`。
@@ -85,7 +97,7 @@ class _RemoteConnection:
 | 子类 | `_validate_config` | `_open_transport` |
 |---|---|---|
 | `StdioConnection` | 无 command → `MCPConfigError` | `stdio_client(StdioServerParameters(command, args, env))` |
-| `HTTPConnection` | 无 url → `MCPConfigError` | `streamable_http_client(url, http_client=factory(headers) 若有 headers/auth 否则 None)` |
+| `HTTPConnection` | 无 url → `MCPConfigError` | `streamable_http_client(url, http_client=factory(headers, auth))`;headers 原样注入;**auth(str)并入 `Authorization: Bearer <auth>` 头**(复杂 OAuth 后续周期) |
 | `SSEConnection` | 无 url → `MCPConfigError` | `logger.warning("sse transport deprecated by MCP spec; prefer http")` 后 `sse_client(url, headers=headers or None)` |
 | `WebSocketConnection` | — | **override `connect()` 直接 raise NotImplementedError("MCP protocol defines no websocket transport; use http (Streamable HTTP) or stdio")**(CHARTER §4;override 是因基类 connect 会包装异常,占位须原样抛出) |
 
@@ -101,9 +113,12 @@ class _RemoteConnection:
 - `__init__`: 遍历 `servers` 中 `transport != "inprocess"` 的配置,
   `build_connection(cfg)` 构造连接存 `self._external[name]`,并回填 `cfg.name = name`。
 - `start()`: 对每个 external 且 `config.lazy is False` 的执行 `await conn.connect(cfg)`;
-  `except HanflowError → logger.warning`(失败隔离:不健康但不阻断其余 server 启动,
-  维持 docstring "failures are isolated, never block the bus" 契约)。`lazy=True` 不预连,
-  延迟到 `tool_call`/`list_tools` 首次访问时 connect(同 try/except 隔离)。
+  **`except (HanflowError, NotImplementedError) → logger.warning`**——NotImplementedError
+  一并隔离,因 WebSocket 占位的 connect 抛 NotImplementedError(audit C 类:否则
+  websocket 配置会击穿 start() 使总线崩溃,违反 "failures are isolated, never block
+  the bus" 契约)。`lazy=True` 不预连,延迟到 `tool_call`/`list_tools` 首次访问时
+  connect;**lazy connect 失败在调用语境以 `MCPConnectionError` 冒泡**(不吞——
+  "隔离"仅适用于 start() 多 server 启动场景,吞掉会丢失真实失败原因)。
 - `stop()`: 追加 `for conn in self._external.values(): await conn.close()`。
 - `tool_call` 重试/destructive 逻辑**零改动**(connection 层已把 SDK 异常翻译为
   HanflowError;`except HanflowError: raise` 透传给 orchestration 的 on_error 策略,
@@ -128,8 +143,11 @@ class _RemoteConnection:
     stdio 命令不存在 → `pytest.raises(MCPConnectionError)` 且 health False。
 - `test_bus.py` 扩充: mcp_servers 含 stdio echo server → `start()` 后
   `list_tools()` 含远端工具、`tool_call("ext.echo", ...)` ok=True、`stop()` 干净退出
-  (失败隔离: 配一个坏 server + 一个好 server,`start()` 不抛)。
-- http/sse 真实链路: `@pytest.mark.integration`(默认跳过,与 docker marker 同策略)。
+  (失败隔离: 配一个坏 server + 一个好 server,`start()` 不抛;**另配 websocket server
+  验证 NotImplementedError 不阻断启动**)。
+- http/sse 真实链路: `@pytest.mark.integration`(默认跳过,与 docker marker 同策略);
+  本地 server 用 mcp SDK server 侧 streamable-http 挂载复用同一 echo fixture(P6 探查
+  `mcp.server` v2 挂载 API)。
 
 ## 3. 接口契约 (对外不变 + 内部明确)
 
@@ -181,8 +199,17 @@ Windows/Proactor loop 兼容性由此实测背书;http/sse 走 integration marke
 
 - `TransportKind` 与 YAML `mcp_servers` 结构零变化 → 老配置无感升级。
 - 行为增强(非破坏): list_tools `[]`→真实清单;call_tool `NotImplementedError`→真实调用。
+- 行为变化(裸用 transport 的路径): config 校验失败与连接失败从现状 "connect 静默吞 →
+  health=False" 变为 "connect 显式抛 MCPConfigError/MCPConnectionError"(bus.start 路径
+  仍被隔离,行为等价)。
 - Minor breaking(CHANGELOG 注明): config 校验/工厂错误类型 `ValueError`→`MCPConfigError`
   (均非 HanflowError 子类→调用方 `except ValueError` 需改;仓库内 2 处测试同步更新,
   全仓 grep 无其他捕获点)。
 - `mcp` 进入主依赖:安装面 +mcp 及其传递依赖(anyio/httpx2/sse-starlette 等,均为
   主流维护包;Windows 有 pywin32 轮子,本机装机已验证)。
+
+## 9. 记账项 (learn 阶段入 LEARNINGS)
+
+- `_find_tool` 每次 tool_call 全量 `list_tools()`,remote 真实化后 http 传输每次调用
+  多一次网络往返;本周期不加缓存(YAGNI),connection 层 list_tools 结果缓存列为
+  下次优先候选。
