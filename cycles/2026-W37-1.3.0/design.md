@@ -154,7 +154,10 @@ YAML mcp_servers: {ext: {transport: stdio, command: python, args: [echo_server.p
          远端工具逻辑错→ToolExecutionError(非重试);未预期 SDK 异常→MCPConnectionError 兜底
 ```
 
-## 5. 错误处理矩阵
+## 5. 错误处理
+
+矩阵中全部异常均为 **`HanflowError` 子类**(CHARTER 统一错误层级 #1:稳定 code +
+retryable 标志 + 上下文),SDK 异常不穿透 transport 边界:
 
 | 场景 | 异常 | code | retryable | 抛出层 |
 |---|---|---|---|---|
