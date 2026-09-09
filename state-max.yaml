@@ -1,0 +1,15 @@
+cycle_id: null
+phase: awaiting_next_cycle
+gate_status: approved
+started_at: null
+target_theme: null
+target_version: null
+retry_count: 0
+audit_retry_count: 0
+last_error: null
+revision_feedback: null
+pending_human_topic: null
+pending_core_override: false
+last_cycle_completed: null
+last_reminded: null
+site_sync_needed: false
