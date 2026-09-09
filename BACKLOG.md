@@ -81,6 +81,8 @@
 
 > 已合并到 main 并 release 的主题。保留简短记录 (cycle_id / 版本 / 主题 / 日期)。
 
+- `2026-W37-1.3.0` · v1.3.0 · learnings-priority→mcp-remote-transport(ai_signal, score 44) · 2026-09-09
+  — MCP remote transport 真实化: mcp SDK v2 三传输 (stdio/http/sse) + WS 显式占位 + bus _external 接线 (隔离/lazy) + 错误契约 3 类 + ADR-0008 + pyjwt override; 顺带修 update-backlog Done 段缺陷 (TDD) + LEARNINGS #3/#5/#9 销账; 4 门全绿 (426 passed), charter --full exit 0。
 - `2026-W34-1.2.4` · v1.2.3 保持 (evolve-only) · loop-toolchain-state-sync-and-signal-filter(human_override) · 2026-08-21
   — signal-gather 行首 ~~ 划线条目过滤 (learnings 19→11) + LEARNINGS #1/#2 销账核实; hanflow 零改动。
 - `2026-W32-1.2.2` · v1.2.3 · docker-provisioner-real-contract-tests(human_override) · 2026-08-04

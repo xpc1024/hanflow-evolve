@@ -116,6 +116,7 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 - **charter-check --diff 阻止架构漂移**：2026-W29 P7 抓到 `core→models` 反向依赖（StreamChunk 定义位置），forcing 修复（移到 core/result.py）。2026-W30 类型上移（SandboxMode/Resources/RunSandbox → core/sandbox_contract.py）就是为了化解潜在的 core→isolation 反向依赖,提前在 design 阶段就避免。policy-as-code 核心价值。
 - **实战驱动 charter-check 自身演进**：跑真实 cycle 暴露并修复多个缺陷（--doc 正则 ADR-0006 / --diff base ADR-0007 / core→models 抓到后修代码）。
 - **设计文档先探查 fixture 再写计划**：execution-plan 的 NexusState/WorkflowNode 构造假设常与实际不符，subagent 要现读 conftest。计划阶段先跑 fixture 探查可省后续调整。**2026-W30 用 Explore agent 一次性探查 8 个文件,significantly 减少 P8 调整次数**。
+- **新依赖 SDK 先装包实测再写 design**(2026-W37 全周期验证): mcp v2 文档三处失真(`streamablehttp_client` 改名 / 异常体系重组 / "Mcp-Session-Id 已移除"系误传)全部被 venv 实测纠正,design 建立在事实上,P7 零 API 返工。`pip index versions` + `uv run python -c "import inspect; signature"` 组合拳成本低收益高。
 - **commit 用 `git add <具体文件>` 不用 `-A`**：`-A` 会扫进运行时产物（workflows/*.yaml），跟着 merge 进 release。已 gitignore workflows/*.yaml + web/web-dev.log。
 - **release 前校验 LICENSE 完整性**：master 的 LICENSE 曾是空文件（0 行），靠 github/main 恢复。
 - **官网 MDX 正文里的文档间链接写 `/docs/...`（不带 locale 前缀）**：渲染层（`MDXRenderer`）已注入 locale-aware 的 `<a>` 组件，会自动把 `/docs/xxx` 转成 `/<locale>/docs/xxx`。作者在 MDX 里**不要手写 `/zh/docs/` 或 `/en/docs/`**——那样会写死语言、切换 locale 时跨语言跳转。写无前缀的 `/docs/xxx` 即可，渲染层统一处理。来源：contribute-pr docs 子命令提交 community 文档时暴露的跨语言跳转 bug（zh 页"下一页"跳到 en），commit `8287134` 在渲染层修复。**site-sync（release P8 同步官网）和 contribute-pr docs 子命令提交文档时都要遵守。**
@@ -198,6 +199,7 @@ hanflow 是基于 LangGraph 的高控制力 agent 框架。核心分层:
 ## 失败教训
 
 - [2026-W34-1.2.4] **ZCode Git Bash pty 下 bats 1.13.0 挂死**: `run` 任何非零退出子进程即挂 (最小复现: `run bash -c "exit 1"`; exit 0 正常)。全量 bats 首跑 17 分钟无输出。绕过: `cmd //c bats tests/`。非仓库问题, 环境恢复后可回归直跑。
+- [2026-W37-1.3.0] **依赖硬冲突三连坑**: ①`requires-python` 无上界 → uv 解析 3.15+ split(zhipuai 无版本);②zhipuai 全系 pin `pyjwt<2.9.0` 与 mcp 的 `pyjwt[crypto]>=2.10.1` 不可共存;③uv override-dependencies 会**丢 extra**(`pyjwt>=2.10.1` 覆盖掉了 `pyjwt[crypto]`,cryptography 缺失 import 崩)。定型解法: 版本域 cap `<3.14` + 冲突方下界提升 + override 写 `pkg[extra]>=ver`。新依赖进主依赖前先 `uv lock` 全量试。
 - [2026-W34-1.2.4] **裸 Python 3.13 环境门再次受阻** (W31 同款): 缺 zhipuai (1 个 glm stream 测试失败) + numpy stub `Type statement` 11 错挡住 mypy; `uv run` 需网络当时超时。**环境恢复后必须重跑 mypy --strict + 全量 pytest** (W31 教训重申)。
 
 <!-- 示例格式:

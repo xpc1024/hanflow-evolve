@@ -13,6 +13,22 @@
 - 初始脚手架: 目录结构、config.yaml、state.yaml、LEARNINGS/BACKLOG/CHANGELOG 模板
   (Phase E0)。
 
+## cycle 2026-W37-1.3.0 (2026-09-09) — learnings-priority → mcp-remote-transport
+
+v1.3.0 minor。BACKLOG 队首 learnings-priority (score 44) 收敛为 learning:3:
+
+### Fixed
+- `update-backlog.sh` 全量重生成清空 Done 段 (learning:9, 本周期 P2 复现即修):
+  `_extract_done_entries` 提取保留 + 4 用例 bats 红→绿, W32-W37 四条 Done 历史恢复。
+
+### Added
+- ADR-0008 (mcp SDK v2 主依赖 + WebSocket 永久占位); direction/design 双产物归档 specs。
+- LEARNINGS #3/#5/#9 销账; 新增 pyjwt 冲突教训 + SDK 装包核实实践两条。
+
+### Changed
+- gate1/gate2 在用户无响应时 auto-approve 留痕 (双轮审核通过为前提), gate3 保持
+  硬停等用户批准——自主性与外向不可逆动作安全的边界定型。
+
 ## cycle 2026-W34-1.2.4 (2026-08-20) — loop-toolchain-state-sync-and-signal-filter
 
 **evolve-only 周期** (hanflow 零改动, 不发空 tag, v1.2.3 保持)。修复 W32 发现的
